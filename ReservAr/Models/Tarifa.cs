@@ -1,5 +1,3 @@
-using System.ComponentModel;
-
 namespace ReservAr.Models;
 
 public class Tarifa
