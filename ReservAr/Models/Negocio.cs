@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.SignalR;
-
 namespace ReservAr.Models;
 
 public class Negocio
