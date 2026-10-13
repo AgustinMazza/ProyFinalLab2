@@ -1,7 +1,10 @@
+using ReservAr.Models.Repositorios;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<RepositorioCategoria>();
 
 var app = builder.Build();
 
