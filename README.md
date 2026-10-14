@@ -1,5 +1,5 @@
 # 🏢 Proyecto Final Lab2 MVC
-#ReservAr
+<h1 align="center">ReservAr</h1>
 ### *Creamos un sistema de gestión de turnos. Principalmente orientado a Canchas de Futbol*    
 
 ## 📅 Entrega
