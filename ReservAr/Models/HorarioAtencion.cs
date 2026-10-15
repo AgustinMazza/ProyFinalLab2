@@ -4,7 +4,7 @@ public class HorarioAtencion
 {
     public int IdHorarioAtencion { get; set; }
     public int IdRecurso { get; set; }
-    public string? DiaSemana { get; set; }
-    public TimeOnly HoraDesde { get; set; }
-    public TimeOnly HoraHasta { get; set; }
+    public int DiaSemana { get; set; }
+    public TimeSpan HoraDesde { get; set; }
+    public TimeSpan HoraHasta { get; set; }
 }
