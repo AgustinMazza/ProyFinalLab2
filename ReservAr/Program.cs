@@ -8,7 +8,7 @@ builder.Services.AddScoped<RepositorioCategoria>();
 builder.Services.AddScoped<RepositorioUsuario>();
 builder.Services.AddScoped<RepositorioNegocio>();
 builder.Services.AddScoped<RepositorioRecurso>();
-
+builder.Services.AddScoped<RepositorioRol>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
