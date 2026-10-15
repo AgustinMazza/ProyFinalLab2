@@ -9,6 +9,8 @@ builder.Services.AddScoped<RepositorioUsuario>();
 builder.Services.AddScoped<RepositorioNegocio>();
 builder.Services.AddScoped<RepositorioRecurso>();
 builder.Services.AddScoped<RepositorioHorarioAtencion>();
+builder.Services.AddScoped<RepositorioRol>();
+builder.Services.AddScoped<RepositorioTarifa>();
 
 var app = builder.Build();
 
