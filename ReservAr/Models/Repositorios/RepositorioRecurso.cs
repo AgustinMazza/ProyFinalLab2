@@ -12,6 +12,43 @@ public class RepositorioRecurso
         _connectionString = configuration.GetConnectionString("DefaultConnection")!;
     }
 
+    public List<Recurso> ListarPorNegocio(int idNegocio)
+    {
+        var lista = new List<Recurso>();
+
+        using var connection = new MySqlConnection(_connectionString);
+        var sql = @"SELECT IdRecurso, IdNegocio, Nombre, Descripcion, DuracionMin, Activo
+                FROM recursos
+                WHERE IdNegocio = @idNegocio
+                ORDER BY Nombre";
+        using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@idNegocio", idNegocio);
+
+        connection.Open();
+        using var reader = command.ExecuteReader();
+
+        while (reader.Read())
+        {
+            lista.Add(new Recurso
+            {
+                IdRecurso = reader.GetInt32("IdRecurso"),
+                IdNegocio = reader.GetInt32("IdNegocio"),
+                Nombre = reader.GetString("Nombre"),
+                Descripcion = reader.IsDBNull(reader.GetOrdinal("Descripcion")) ? null : reader.GetString("Descripcion"),
+                DuracionMin = reader.GetInt32("DuracionMin"),
+                Activo = reader.GetBoolean("Activo")
+            });
+        }
+
+        return lista;
+    }
+
+
+
+
+
+
+
     public List<Recurso> Listar()
     {
         var lista = new List<Recurso>();
@@ -99,7 +136,6 @@ public class RepositorioRecurso
     }
 
 
-
     public int Modificar(Recurso recurso)
     {
         using var connection = new MySqlConnection(_connectionString);
@@ -117,17 +153,35 @@ public class RepositorioRecurso
         return command.ExecuteNonQuery();
     }
 
-    // Baja lógica: evita el error de FK con Reservas/Tarifas/Horarios
-public int Eliminar(int id)
-{
-    using var connection = new MySqlConnection(_connectionString);
-    var sql = "UPDATE recursos SET Activo = 0 WHERE IdRecurso = @id";
-    using var command = new MySqlCommand(sql, connection);
-    command.Parameters.AddWithValue("@id", id);
-    connection.Open();
-    return command.ExecuteNonQuery();
+
+    public int Eliminar(int id)
+    {
+        using var connection = new MySqlConnection(_connectionString);
+        var sql = "UPDATE recursos SET Activo = 0 WHERE IdRecurso = @id";
+        using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@id", id);
+        connection.Open();
+        return command.ExecuteNonQuery();
+    }
+
+    public int Reactivar(int id)
+    {
+        using var connection = new MySqlConnection(_connectionString);
+        var sql = "UPDATE recursos SET Activo = 1 WHERE IdRecurso = @id";
+        using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@id", id);
+        connection.Open();
+        return command.ExecuteNonQuery();
+    }
+
+
+
+
+
+
+
+
 }
 
 
 
-}
