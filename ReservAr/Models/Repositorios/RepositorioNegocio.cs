@@ -46,7 +46,7 @@ public class RepositorioNegocio
     public Negocio? ObtenerPorId(int id)
     {
         using var connection = new MySqlConnection(_connectionString);
-        var sql = "SELECT IdNegocio, IdCategoria, IdUsuario, Nombre, Descripcion, Direccion, Ciudad, Telefono, LogoUrl, Activo FROM negocios ORDER BY Nombre";
+        var sql = "SELECT IdNegocio, IdCategoria, IdUsuario, Nombre, Descripcion, Direccion, Ciudad, Telefono, LogoUrl, Activo FROM negocios ORDER BY Nombre WHERE IdNegocio = @id";
         using var command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@id", id);
 
@@ -73,19 +73,22 @@ public class RepositorioNegocio
         return null;
     }
 
-    public Negocio? ObtenerPorUsuario(int IdUsuario)
+    public List<Negocio> ObtenerPorUsuario(int idUsuario)
     {
+        var lista = new List<Negocio>();
+
         using var connection = new MySqlConnection(_connectionString);
-        var sql = "SELECT IdNegocio, IdCategoria, IdUsuario, Nombre, Descripcion, Direccion, Ciudad, Telefono, LogoUrl, Activo FROM negocios WHERE IdUsuario = @IdUsuario";
+        var sql = "SELECT IdNegocio, IdCategoria, IdUsuario, Nombre, Descripcion, Direccion, Ciudad, Telefono, LogoUrl, Activo " +
+                  "FROM negocios WHERE IdUsuario = @idUsuario ORDER BY Nombre";
         using var command = new MySqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@IdUsuario", IdUsuario);
+        command.Parameters.AddWithValue("@idUsuario", idUsuario);
 
         connection.Open();
         using var reader = command.ExecuteReader();
 
-        if (reader.Read())
+        while (reader.Read())
         {
-            return new Negocio
+            lista.Add(new Negocio
             {
                 IdNegocio = reader.GetInt32("IdNegocio"),
                 IdCategoria = reader.GetInt32("IdCategoria"),
@@ -97,24 +100,27 @@ public class RepositorioNegocio
                 Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
                 LogoUrl = reader.IsDBNull(reader.GetOrdinal("LogoUrl")) ? null : reader.GetString("LogoUrl"),
                 Activo = reader.GetBoolean("Activo"),
-            };
+            });
         }
 
-        return null;
+        return lista;
     }
-    public Negocio? ObtenerPorCategoria(int IdCategoria)
+    public List<Negocio> ObtenerPorCategoria(int idCategoria)
     {
+        var lista = new List<Negocio>();
+
         using var connection = new MySqlConnection(_connectionString);
-        var sql = "SELECT IdNegocio, IdCategoria, IdUsuario, Nombre, Descripcion, Direccion, Ciudad, Telefono, LogoUrl, Activo FROM negocios WHERE IdCategoria = @IdCategoria";
+        var sql = "SELECT IdNegocio, IdCategoria, IdUsuario, Nombre, Descripcion, Direccion, Ciudad, Telefono, LogoUrl, Activo " +
+                  "FROM negocios WHERE IdCategoria = @idCategoria ORDER BY Nombre";
         using var command = new MySqlCommand(sql, connection);
-        command.Parameters.AddWithValue("@IdCategoria", IdCategoria);
+        command.Parameters.AddWithValue("@idCategoria", idCategoria);
 
         connection.Open();
         using var reader = command.ExecuteReader();
 
-        if (reader.Read())
+        while (reader.Read())
         {
-            return new Negocio
+            lista.Add(new Negocio
             {
                 IdNegocio = reader.GetInt32("IdNegocio"),
                 IdCategoria = reader.GetInt32("IdCategoria"),
@@ -126,16 +132,18 @@ public class RepositorioNegocio
                 Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
                 LogoUrl = reader.IsDBNull(reader.GetOrdinal("LogoUrl")) ? null : reader.GetString("LogoUrl"),
                 Activo = reader.GetBoolean("Activo"),
-            };
+
+
+            });
         }
 
-        return null;
+        return lista;
     }
 
     public int Crear(Negocio negocio)
     {
         using var connection = new MySqlConnection(_connectionString);
-        var sql = "INSERT INTO  " +
+        var sql = "INSERT INTO negocios " +
                 "(IdCategoria, IdUsuario, Nombre, Descripcion," +
                 " Direccion, Ciudad, Telefono, LogoUrl, Activo)" +
                 "VALUES " +

@@ -61,6 +61,7 @@ public class RepositorioHorarioAtencion
                   "SET DiaSemana = @DiaSemana, HoraDesde = @HoraDesde, HoraHasta = @HoraHasta " +
                   "WHERE IdHorarioAtencion = @id";
         using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@id", horarioAtencion.IdHorarioAtencion);
         command.Parameters.AddWithValue("@DiaSemana", horarioAtencion.DiaSemana);
         command.Parameters.AddWithValue("@HoraDesde", horarioAtencion.HoraDesde);
         command.Parameters.AddWithValue("@HoraHasta", horarioAtencion.HoraHasta);

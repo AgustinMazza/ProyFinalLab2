@@ -36,15 +36,13 @@ public class RepositorioTarifa
                 IdTarifa = reader.GetInt32("IdTarifa"),
                 IdRecurso = reader.GetInt32("IdRecurso"),
                 Nombre = reader.GetString("Nombre"),
-                HoraDesde = TimeOnly.FromTimeSpan(reader.GetTimeSpan(reader.GetOrdinal("HoraDesde"))),
-                HoraHasta = TimeOnly.FromTimeSpan(reader.GetTimeSpan(reader.GetOrdinal("HoraHasta"))),
+                HoraDesde = reader.GetTimeSpan("HoraDesde"),
+                HoraHasta = reader.GetTimeSpan("HoraHasta"),
                 PrecioHora = reader.GetDecimal("PrecioHora"),
                 Activo = reader.GetBoolean("Activo")
             });
         }
         return lista;
-
-
 
 
 
@@ -69,8 +67,8 @@ public class RepositorioTarifa
                 IdTarifa = reader.GetInt32("IdTarifa"),
                 IdRecurso = reader.GetInt32("IdRecurso"),
                 Nombre = reader.GetString("Nombre"),
-                HoraDesde = TimeOnly.FromTimeSpan(reader.GetTimeSpan(reader.GetOrdinal("HoraDesde"))),
-                HoraHasta = TimeOnly.FromTimeSpan(reader.GetTimeSpan(reader.GetOrdinal("HoraHasta"))),
+                HoraDesde = reader.GetTimeSpan("HoraDesde"),
+                HoraHasta = reader.GetTimeSpan("HoraHasta"),
                 PrecioHora = reader.GetDecimal("PrecioHora"),
                 Activo = reader.GetBoolean("Activo")
             };
@@ -92,8 +90,8 @@ public class RepositorioTarifa
         using var command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@idrecurso", tarifa.IdRecurso);
         command.Parameters.AddWithValue("@nombre", tarifa.Nombre);
-        command.Parameters.AddWithValue("@horaDesde", tarifa.HoraDesde.ToTimeSpan());
-        command.Parameters.AddWithValue("@horaHasta", tarifa.HoraHasta.ToTimeSpan());
+        command.Parameters.AddWithValue("@horaDesde", tarifa.HoraDesde);
+        command.Parameters.AddWithValue("@horaHasta", tarifa.HoraHasta);
         command.Parameters.AddWithValue("@precioHora", tarifa.PrecioHora);
         command.Parameters.AddWithValue("@activo", tarifa.Activo);
 
@@ -114,8 +112,8 @@ public class RepositorioTarifa
         using var command = new MySqlCommand(sql, connection);
         command.Parameters.AddWithValue("@id", tarifa.IdTarifa);
         command.Parameters.AddWithValue("@nombre", tarifa.Nombre);
-        command.Parameters.AddWithValue("@horaDesde", tarifa.HoraDesde.ToTimeSpan());
-        command.Parameters.AddWithValue("@horaHasta", tarifa.HoraHasta.ToTimeSpan());
+        command.Parameters.AddWithValue("@horaDesde", tarifa.HoraDesde);
+        command.Parameters.AddWithValue("@horaHasta", tarifa.HoraHasta);
         command.Parameters.AddWithValue("@precioHora", tarifa.PrecioHora);
         command.Parameters.AddWithValue("@activo", tarifa.Activo);
 
