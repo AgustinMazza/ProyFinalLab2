@@ -1,4 +1,5 @@
 using ReservAr.Models.Repositorios;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,20 @@ builder.Services.AddScoped<RepositorioHorarioAtencion>();
 builder.Services.AddScoped<RepositorioRol>();
 builder.Services.AddScoped<RepositorioTarifa>();
 
+
+
+builder.Services
+    .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccesoDenegado";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
+    });
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,6 +39,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+app.UseAuthentication();  
 
 app.UseAuthorization();
 

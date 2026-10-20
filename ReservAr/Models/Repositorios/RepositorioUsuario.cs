@@ -44,6 +44,38 @@ public class RepositorioUsuario
         return lista;
     }
 
+
+    public Usuario? ObtenerPorEmail(string email)
+    { 
+        using var connection = new MySqlConnection(_connectionString);
+        var sql = "SELECT IdUsuario, IdRol, Nombre, Apellido, Email, PasswordHash, Telefono, Avatar, Activo, FechaAlta " + "From usuarios WHERE Email = @email";
+        using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@email", email);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+
+    if (reader.Read())
+    {
+        return new Usuario
+        {
+            IdUsuario = reader.GetInt32("IdUsuario"),
+            IdRol = reader.GetInt32("IdRol"),
+            Nombre = reader.GetString("Nombre"),
+            Apellido = reader.GetString("Apellido"),
+            Email = reader.GetString("Email"),
+            PasswordHash = reader.GetString("PasswordHash"),
+            Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
+            Avatar = reader.IsDBNull(reader.GetOrdinal("Avatar")) ? null : reader.GetString("Avatar"),
+            Activo = reader.GetBoolean("Activo"),
+            FechaAlta = reader.GetDateTime("FechaAlta")
+        };
+    }
+    return null;
+
+
+    }
+
     public Usuario? ObtenerPorId(int id)
     {
         using var connection = new MySqlConnection(_connectionString);

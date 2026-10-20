@@ -75,7 +75,7 @@ CREATE TABLE imagenes_negocio (
     IdNegocio        INT NOT NULL,
     Ruta             VARCHAR(300) NOT NULL,
     Orden            VARCHAR(300) NOT NULL,
-    esPortada        BOOLEAN NOT NULL DEFAULT 0,
+    EsPortada        BOOLEAN NOT NULL DEFAULT 0,
     CONSTRAINT fk_imagenes_negocio FOREIGN KEY (IdNegocio) REFERENCES negocios (IdNegocio) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -157,10 +157,10 @@ INSERT INTO categorias (Nombre, Descripcion) VALUES
 -- PasswordHash es un valor de relleno. Cuando este hecho el login,
 -- se reemplaza por los hashes reales generados por la aplicacion
 INSERT INTO usuarios (IdRol, Nombre, Apellido, Email, PasswordHash, Telefono) VALUES
-(3, 'Super', 'Admin',  'superadmin@reservar.com', 'PENDIENTE_HASH', NULL),
-(2, 'Marta', 'Gomez',  'marta@reservar.com',      'PENDIENTE_HASH', '3511112222'),
-(1, 'Juan',  'Perez',  'juan@reservar.com',       'PENDIENTE_HASH', '3513334444'),
-(1, 'Sofia', 'Lopez',  'sofia@reservar.com',      'PENDIENTE_HASH', '3515556666');
+(3, 'Super', 'Admin',  'superadmin@reservar.com', '600000.QonjeZg1t97+2sobE/XI/Q==.qnecRmqs4PEh7nWemaMObxyQtO4SzfaYF7g0zBx1ick=', NULL),
+(2, 'Marta', 'Gomez',  'marta@reservar.com',      '600000.bVm0kDiXaJWwqkCN6B7Lqw==.SAkXCq2rZ0ULi4wM7I9Titnit12eaF9m2D49+1Her8E=', '3511112222'),
+(1, 'Juan',  'Perez',  'juan@reservar.com',       '600000.tblMc32kISK6JO94RJL/8Q==.i/E1R6Yk843PHjW4zd7hmUDvnXcI15tqms4/kfvs56Q=', '3513334444'),
+(1, 'Sofia', 'Lopez',  'sofia@reservar.com',      '600000.Gkd3HMNP5CpbSiHBRQAAdQ==.K3HqxOLggMoWEWBwJmMpI6Y2QCrrRnzqeOPc19yajQk=', '3515556666');
 
 INSERT INTO negocios (IdCategoria, IdUsuario, Nombre, Descripcion, Direccion, Ciudad, Telefono) VALUES
 (1, 2, 'Complejo La Pelota', 'Canchas de futbol 5 con vestuarios y buffet', 'Av. Colon 1234', 'Cordoba', '3511112222');

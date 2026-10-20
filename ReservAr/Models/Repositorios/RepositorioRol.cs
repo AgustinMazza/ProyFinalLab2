@@ -34,4 +34,41 @@ public class RepositorioRol
 
         return lista;
     }
+    public Rol? ObtenerPorId(int id)
+{
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "SELECT IdRol, Nombre FROM roles WHERE IdRol = @id";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@id", id);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+
+    return reader.Read()
+        ? new Rol { IdRol = reader.GetInt32("IdRol"), Nombre = reader.GetString("Nombre") }
+        : null;
+}
+
+
+public Rol? ObtenerPorNombre(string nombre)
+{
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "SELECT IdRol, Nombre FROM roles WHERE Nombre = @nombre";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@nombre", nombre);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+
+    return reader.Read()
+        ? new Rol { IdRol = reader.GetInt32("IdRol"), Nombre = reader.GetString("Nombre") }
+        : null;
+}
+
+
+
+
+
+
+
 }
