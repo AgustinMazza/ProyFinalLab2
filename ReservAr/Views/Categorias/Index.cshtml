@@ -1,0 +1,39 @@
+@model List<ReservAr.Models.Categoria>
+@{
+  ViewData["Title"] = "Categorias";
+}
+
+<h2 class="mb-4">Categorías</h2>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+<a asp-action="Crear" class="btn btn-primary mb-3">Nueva categoría</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Ícono</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var c in Model)
+        {
+            <tr>
+                <td>@c.Nombre</td>
+                <td>@c.Descripcion</td>
+                <td>@c.Icono</td>
+                <td>
+                  <a asp-action="Editar" asp-route-id="@c.IdCategoria">Editar</a>
+                  <form asp-action="Eliminar" asp-route-id="@c.IdCategoria" method="post"
+                        onsubmit="return confirm('¿Eliminar esta categoría?');" class="d-inline">
+                      <button type="submit" class="btn btn-link p-0">Eliminar</button>
+                  </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table

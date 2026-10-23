@@ -41,7 +41,7 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link text-dark" asp-controller="Account"
-                                       asp-action="Registro">Registrarse</a>
+                                      asp-action="Registro">Registrarse</a>
                                 </li>
                             }
                         </ul>
@@ -50,8 +50,14 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home"
-                               asp-action="Privacy">Privacy</a>
+                              asp-action="Privacy">Privacy</a>
                         </li>
+                        @if (User.IsInRole("SuperAdmin"))
+                        {
+                          <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Categorias" asp-action="Index">Categorías</a>
+                          </li>
+                        }
                     </ul>
                 </div>
             </div>

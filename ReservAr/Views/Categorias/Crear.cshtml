@@ -1,0 +1,37 @@
+@model ReservAr.Models.Categoria
+@{
+    ViewData["Title"] = "Nueva categoría";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Nueva categoría</h2>
+
+        <form asp-action="Crear" method="post">
+            <div class="mb-3">
+                <label asp-for="Nombre" class="form-label">Nombre</label>
+                <input asp-for="Nombre" class="form-control" maxlength="100" />
+                <span asp-validation-for="Nombre" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Descripcion" class="form-label">Descripción</label>
+                <input asp-for="Descripcion" class="form-control" maxlength="300" />
+                <span asp-validation-for="Descripcion" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Icono" class="form-label">Ícono</label>
+                <input asp-for="Icono" class="form-control" maxlength="100" />
+                <span asp-validation-for="Icono" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

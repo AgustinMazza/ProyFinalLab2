@@ -74,7 +74,7 @@ CREATE TABLE imagenes_negocio (
     IdImagenNegocio  INT AUTO_INCREMENT PRIMARY KEY,
     IdNegocio        INT NOT NULL,
     Ruta             VARCHAR(300) NOT NULL,
-    Orden            VARCHAR(300) NOT NULL,
+    Orden            INT NOT NULL DEFAULT 0,
     EsPortada        BOOLEAN NOT NULL DEFAULT 0,
     CONSTRAINT fk_imagenes_negocio FOREIGN KEY (IdNegocio) REFERENCES negocios (IdNegocio) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
