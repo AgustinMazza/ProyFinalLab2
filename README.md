@@ -171,3 +171,14 @@ dotnet run
 ```
 
 `dotnet run` muestra en la consola la dirección donde queda corriendo la aplicación (por ejemplo, `https://localhost:xxxx`).
+
+## 🔑 Usuarios de prueba
+
+Todos se cargan con el script `init.sql`.
+
+| Rol | Email | Contraseña |
+|---|---|---|
+| SuperAdmin | superadmin@reservar.com | Super123! |
+| Admin (dueña de un negocio) | marta@reservar.com | Admin123! |
+| Usuario (cliente) | juan@reservar.com | Usuario123! |
+| Usuario (cliente) | sofia@reservar.com | Usuario123! |
