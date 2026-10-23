@@ -165,4 +165,16 @@ public class RepositorioUsuario
         connection.Open();
         return command.ExecuteNonQuery();
     }
+
+    public int ActualizarAvatar(int id, string ruta)
+    {
+        using var connection = new MySqlConnection(_connectionString);
+        var sql = "UPDATE usuarios SET Avatar = @avatar WHERE IdUsuario = @id";
+        using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@avatar", ruta);
+        command.Parameters.AddWithValue("@id", id);
+
+        connection.Open();
+        return command.ExecuteNonQuery();
+    }
 }

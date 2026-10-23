@@ -1,0 +1,55 @@
+@model ReservAr.Models.Usuario
+@{
+  ViewData["Title"] = "Mi perfil";
+}
+
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h2 class="mb-4">Mi perfil</h2>
+
+    @if (TempData["Mensaje"] != null)
+    {
+      <div class="alert alert-success">@TempData["Mensaje"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+      <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <div class="text-center mb-4">
+      @if (!string.IsNullOrEmpty(Model.Avatar))
+      {
+        <img src="@Model.Avatar" alt="Avatar" class="rounded-circle"
+            style="width:150px; height:150px; object-fit:cover;" />
+      }
+      else
+      {
+        <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center"
+            style="width:150px; height:150px; font-size:3rem;">
+          @Model.Nombre[0]
+        </div>
+      }
+    </div>
+
+    <form asp-action="CambiarAvatar" method="post" enctype="multipart/form-data" class="mb-4">
+      <div class="input-group">
+        <input type="file" name="archivo" accept=".jpg,.jpeg,.png,.webp" class="form-control" />
+        <button type="submit" class="btn btn-primary">Cambiar avatar</button>
+      </div>
+    </form>
+
+    <dl class="row">
+      <dt class="col-sm-4">Nombre</dt>
+      <dd class="col-sm-8">@Model.Nombre @Model.Apellido</dd>
+
+      <dt class="col-sm-4">Email</dt>
+      <dd class="col-sm-8">@Model.Email</dd>
+
+      <dt class="col-sm-4">Teléfono</dt>
+      <dd class="col-sm-8">@(Model.Telefono ?? "No cargado")</dd>
+
+      <dt class="col-sm-4">Miembro desde</dt>
+      <dd class="col-sm-8">@Model.FechaAlta.ToString("dd/MM/yyyy")</dd>
+    </dl>
+  </div>
+</div>
