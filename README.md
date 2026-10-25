@@ -18,7 +18,10 @@
 
 *A continuación se presenta el esquema del modelo de datos correspondiente a la aplicación.*
 
-### *Diagrama de Clases* 
+### *Diagrama de Entidad-Relación (DER)*
+
+![DER de ReservAr](docs/der.png)
+
 ```mermaid
 erDiagram
     Rol ||--o{ Usuario : tiene
@@ -154,7 +157,7 @@ El archivo `appsettings.json` no se sube al repositorio porque contiene la contr
 
 1. Copiar el molde con el nombre real. Desde la raíz del repositorio:
 ```bash
-   cp ReservAr/appsettings.json.example ReservAr/appsettings.json
+   cp appsettings.json.example ReservAr/appsettings.json
 ```
 2. Abrir `ReservAr/appsettings.json` y reemplazar `TuUsuario` y `TuContraseña` por los datos de tu MySQL local:
 ```json

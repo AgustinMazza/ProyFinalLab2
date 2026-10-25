@@ -106,7 +106,7 @@ public class AccountController : Controller
     }
 
     //El rol siempre es Usuario osea q el que se registra va a ser usuario siempre a no ser q tenga otro rol asignado a la cuenta antes
-    var rol = _repoRol.ObtenerPorNombre("Usuario");
+    var rol = _repoRol.ObtenerPorNombre(Roles.Usuario);
     if (rol == null)
     {
       ModelState.AddModelError("", "No se pudo completar el registro, intentá más tarde");
@@ -157,7 +157,7 @@ public class AccountController : Controller
   [ValidateAntiForgeryToken]
   public async Task<IActionResult> CambiarAvatar(IFormFile? archivo)
   {
-    if(archivo == null || archivo.Length == 0)
+    if (archivo == null || archivo.Length == 0)
     {
       TempData["Error"] = "Elegi una imagen";
       return RedirectToAction(nameof(Perfil));
@@ -170,7 +170,7 @@ public class AccountController : Controller
     }
 
     var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
-    var permitidas = new[]{".jpg",".jpeg",".png",".webp"};
+    var permitidas = new[] { ".jpg", ".jpeg", ".png", ".webp" };
     if (!permitidas.Contains(extension))
     {
       TempData["Error"] = "Solo se permiten imagenes en formato JPG, JPEG, PNG, WEBP";
@@ -183,7 +183,7 @@ public class AccountController : Controller
     var nombreArchivo = $"{Guid.NewGuid()}{extension}";
     var rutaFisica = Path.Combine(carpeta, nombreArchivo);
 
-    using(var stream = new FileStream(rutaFisica, FileMode.Create))
+    using (var stream = new FileStream(rutaFisica, FileMode.Create))
     {
       await archivo.CopyToAsync(stream);
     }

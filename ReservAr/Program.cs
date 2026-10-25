@@ -12,7 +12,7 @@ builder.Services.AddScoped<RepositorioRecurso>();
 builder.Services.AddScoped<RepositorioHorarioAtencion>();
 builder.Services.AddScoped<RepositorioRol>();
 builder.Services.AddScoped<RepositorioTarifa>();
-
+builder.Services.AddScoped<RepositorioReserva>();
 
 
 builder.Services

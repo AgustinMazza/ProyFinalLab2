@@ -3,10 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using ReservAr.Models;
 using ReservAr.Models.Repositorios;
+using ReservAr.Helpers;
 
 namespace ReservAr.Controllers;
 
-[Authorize(Roles = "SuperAdmin")]
+[Authorize(Roles = Roles.SuperAdmin)]
 public class CategoriasController : Controller
 {
   private readonly RepositorioCategoria _repo;
