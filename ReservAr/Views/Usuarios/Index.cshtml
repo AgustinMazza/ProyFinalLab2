@@ -1,0 +1,120 @@
+@{
+  ViewData["Title"] = "Usuarios";
+}
+
+<style>
+  [v-cloak] {
+    display: none;
+  }
+</style>
+
+@Html.AntiForgeryToken()
+
+<div id="app" v-cloak>
+  <h2 class="mb-4">Usuarios</h2>
+
+  <div class="d-flex justify-content-between mb-3">
+    <input type="text" class="form-control w-50" placeholder="Buscar por nombre, apellido o email" v-model="buscar"
+          v-on:input="buscarConPausa" />
+    <button class="btn btn-primary" v-on:click="nuevo">Nuevo usuario</button>
+  </div>
+
+  <div v-if="mostrarForm" class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title">{{ form.idUsuario === 0 ? 'Nuevo usuario' : 'Editar usuario' }}</h5>
+
+      <div v-if="errores.length > 0" class="alert alert-danger">
+        <ul class="mb-0">
+          <li v-for="e in errores">{{ e }}</li>
+        </ul>
+      </div>
+
+      <form v-on:submit.prevent="guardar">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Nombre</label>
+            <input type="text" class="form-control" v-model="form.nombre" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Apellido</label>
+            <input type="text" class="form-control" v-model="form.apellido" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" v-model="form.email" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Teléfono</label>
+            <input type="text" class="form-control" v-model="form.telefono" />
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Rol</label>
+            <select class="form-select" v-model="form.idRol">
+              <option v-for="r in roles" :key="r.idRol" :value="r.idRol">{{ r.nombre }}</option>
+            </select>
+          </div>
+          <div class="col-md-6" v-if="form.idUsuario === 0">
+            <label class="form-label">Contraseña</label>
+            <input type="password" class="form-control" v-model="form.password" />
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <button type="submit" class="btn btn-success">Guardar</button>
+          <button type="button" class="btn btn-secondary" v-on:click="cancelar">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Email</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="u in usuarios" :key="u.idUsuario" :class="{ 'table-secondary': !u.activo }">
+        <td>{{ u.apellido }}, {{ u.nombre }}</td>
+        <td>{{ u.email }}</td>
+        <td>{{ u.rol }}</td>
+        <td>
+          <span class="badge" :class="u.activo ? 'bg-success' : 'bg-secondary'">
+            {{ u.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary" v-on:click="editar(u)">Editar</button>
+          <button v-if="u.activo" class="btn btn-sm btn-outline-danger" v-on:click="baja(u)">Dar de baja</button>
+          <button v-else class="btn btn-sm btn-outline-success" v-on:click="reactivar(u)">Reactivar</button>
+        </td>
+      </tr>
+      <tr v-if="usuarios.length === 0">
+        <td colspan="5" class="text-center text-muted">No hay usuarios para mostrar</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <nav v-if="totalPaginas > 1">
+    <ul class="pagination">
+      <li class="page-item" :class="{ disabled: pagina === 1 }">
+        <button class="page-link" v-on:click="irAPagina(pagina - 1)">Anterior</button>
+      </li>
+      <li v-for="n in totalPaginas" :key="n" class="page-item" :class="{ active: n === pagina }">
+        <button class="page-link" v-on:click="irAPagina(n)">{{ n }}</button>
+      </li>
+      <li class="page-item" :class="{ disabled: pagina === totalPaginas }">
+        <button class="page-link" v-on:click="irAPagina(pagina + 1)">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+@section Scripts {
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+  <script src="~/js/usuarios.js" asp-append-version="true"></script>
+}
