@@ -1,0 +1,137 @@
+@{
+    var esSuperAdmin = User.IsInRole(Roles.SuperAdmin);
+    ViewData["Title"] = esSuperAdmin ? "Negocios" : "Mis negocios";
+}
+
+<style>
+    [v-cloak] {
+        display: none;
+
+    }
+</style>
+
+
+
+@Html.AntiForgeryToken()
+
+<div id="app" v-cloak data-es-superadmin="@(esSuperAdmin ? "true" : "false")">
+    <h2 class="mb-4">@ViewData["Title"]</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+        <input type="text" class="form-control w-50" placeholder="Buscar por nombre, dirección o ciudad"
+               v-model="buscar" v-on:input="buscarConPausa" />
+        <button class="btn btn-primary" v-on:click="nuevo">Nuevo negocio</button>
+    </div>
+
+    <div v-if="mostrarForm" class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ form.idNegocio === 0 ? 'Nuevo negocio' : 'Editar negocio' }}</h5>
+
+            <div v-if="errores.length > 0" class="alert alert-danger">
+                <ul class="mb-0">
+                    <li v-for="e in errores">{{ e }}</li>
+                </ul>
+            </div>
+
+            <form v-on:submit.prevent="guardar">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nombre</label>
+                        <input type="text" class="form-control" maxlength="150" v-model="form.nombre" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Categoria</label>
+                        <select class="form-select" v-model="form.idCategoria">
+                            <option :value="0" disabled>Elegi una categoria</option>
+                            <option v-for="c in categorias" :key="c.idCategoria" :value="c.idCategoria">{{ c.nombre }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Dirección</label>
+                        <input type="text" class="form-control" maxlength="200" v-model="form.direccion" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Ciudad</label>
+                        <input type="text" class="form-control" maxlength="100" v-model="form.ciudad" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" class="form-control" maxlength="30" v-model="form.telefono" />
+                    </div>
+                    <div class="col-md-6" v-if="esSuperAdmin">
+                        <label class="form-label">Dueño</label>
+                        <select class="form-select" v-model="form.idUsuario">
+                            <option :value="0" disabled>Elegi un dueño</option>
+                            <option v-for="d in duenios" :key="d.idUsuario" :value="d.idUsuario">{{ d.nombreCompleto }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Descripción</label>
+                        <textarea class="form-control" rows="3" maxlength="500" v-model="form.descripcion"></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">Guardar</button>
+                    <button type="button" class="btn btn-secondary" v-on:click="cancelar">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Categoria</th>
+                <th>Dirección</th>
+                <th v-if="esSuperAdmin">Dueño</th>
+                <th>Estado</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="n in negocios" :key="n.idNegocio" :class="{ 'table-secondary': !n.activo }">
+                <td>{{ n.nombre }}</td>
+                <td>{{ n.categoria }}</td>
+                <td>{{ n.direccion }}, {{ n.ciudad }}</td>
+                <td v-if="esSuperAdmin">{{ n.duenio }}</td>
+                <td>
+                    <span class="badge" :class="n.activo ? 'bg-success' : 'bg-secondary'">
+                        {{ n.activo ? 'Activo' : 'Inactivo' }}
+                    </span>
+                </td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary" v-on:click="editar(n)">Editar</button>
+                    <button v-if="n.activo" class="btn btn-sm btn-outline-danger" v-on:click="baja(n)">Dar de
+                        baja</button>
+                        <button v-else class="btn btn-sm btn-outline-success" v-on:click="reactivar(n)">Reactivar</button>
+                    </td>
+                </tr>
+                <tr v-if="negocios.length === 0">
+                    <td :colspan="esSuperAdmin ? 6 : 5" class="text-center text-muted">No hay negocios para mostrar</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <nav v-if="totalPaginas > 1">
+            <ul class="pagination">
+                <li class="page-item" :class="{ disabled: pagina === 1 }">
+                    <button class="page-link" v-on:click="irAPagina(pagina - 1)">Anterior</button>
+                </li>
+                <li v-for="n in totalPaginas" :key="n" class="page-item" :class="{ active: n === pagina }">
+                    <button class="page-link" v-on:click="irAPagina(n)">{{ n }}</button>
+                </li>
+                <li class="page-item" :class="{ disabled: pagina === totalPaginas }">
+                    <button class="page-link" v-on:click="irAPagina(pagina + 1)">Siguiente</button>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    @section Scripts {
+        <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+        <script src="~/js/negocios.js" asp-append-version="true"></script>
+    }
