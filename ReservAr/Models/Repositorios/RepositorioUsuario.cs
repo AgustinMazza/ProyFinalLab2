@@ -225,4 +225,16 @@ public class RepositorioUsuario
     connection.Open();
     return command.ExecuteNonQuery();
   }
+
+  public int ActualizarPassword(int id, string passwordHash)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "UPDATE usuarios SET PasswordHash = @passwordHash WHERE IdUsuario = @id";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@passwordHash", passwordHash);
+    command.Parameters.AddWithValue("@id", id);
+
+    connection.Open();
+    return command.ExecuteNonQuery();
+  }
 }

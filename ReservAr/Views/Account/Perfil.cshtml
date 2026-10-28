@@ -4,7 +4,7 @@
 }
 
 <div class="row justify-content-center">
-  <div class="col-md-6">
+  <div class="col-md-6" id="panelPerfil">
     <h2 class="mb-4">Mi perfil</h2>
 
     @if (TempData["Mensaje"] != null)
@@ -51,5 +51,55 @@
       <dt class="col-sm-4">Miembro desde</dt>
       <dd class="col-sm-8">@Model.FechaAlta.ToString("dd/MM/yyyy")</dd>
     </dl>
-  </div>
-</div>
+    <hr />
+
+    <div class="d-flex gap-2 mb-3">
+      <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#formDatos">
+        Editar mis datos
+      </button>
+      <button class="btn btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#formPassword">
+        Cambiar contraseña
+      </button>
+    </div>
+
+    <div class="collapse" id="formDatos" data-bs-parent="#panelPerfil">
+      <div class="card card-body mb-4">
+        <h4 class="mb-3">Editar mis datos</h4>
+        <form asp-action="EditarPerfil" method="post">
+          <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="Nombre" value="@Model.Nombre" class="form-control" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Apellido</label>
+            <input type="text" name="Apellido" value="@Model.Apellido" class="form-control" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Teléfono</label>
+            <input type="text" name="Telefono" value="@Model.Telefono" class="form-control" />
+          </div>
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="collapse" id="formPassword" data-bs-parent="#panelPerfil">
+      <div class="card card-body mb-4">
+        <h4 class="mb-3">Cambiar contraseña</h4>
+        <form asp-action="CambiarPassword" method="post">
+          <div class="mb-3">
+            <label class="form-label">Contraseña actual</label>
+            <input type="password" name="ActualPassword" class="form-control" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Contraseña nueva</label>
+            <input type="password" name="NuevaPassword" class="form-control" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Repetir contraseña nueva</label>
+            <input type="password" name="ConfirmarPassword" class="form-control" />
+          </div>
+          <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
+        </form>
+      </div>
+    </div>

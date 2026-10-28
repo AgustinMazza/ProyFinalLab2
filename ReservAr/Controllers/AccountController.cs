@@ -195,6 +195,68 @@ public class AccountController : Controller
     return RedirectToAction(nameof(Perfil));
   }
 
+  //EditarPerfil
+  [Authorize]
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> EditarPerfil(EditarPerfilViewModel model)
+  {
+    if (!ModelState.IsValid)
+    {
+      TempData["Error"] = ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage;
+      return RedirectToAction(nameof(Perfil));
+    }
+
+    var id = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+    var usuario = _repoUsuario.ObtenerPorId(id);
+    if (usuario == null)
+    {
+      return NotFound();
+    }
+
+    usuario.Nombre = model.Nombre.Trim();
+    usuario.Apellido = model.Apellido.Trim();
+    usuario.Telefono = string.IsNullOrWhiteSpace(model.Telefono) ? null : model.Telefono.Trim();
+    _repoUsuario.Modificar(usuario);
+
+    //Se vuelve a iniciar sesión para que el nombre del menú se actualice
+    await IniciarSesionAsync(usuario, User.FindFirstValue(ClaimTypes.Role)!);
+
+    TempData["Mensaje"] = "Datos actualizados";
+    return RedirectToAction(nameof(Perfil));
+  }
+
+  //CambiarPassword
+  [Authorize]
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public IActionResult CambiarPassword(CambiarPasswordViewModel model)
+  {
+    if (!ModelState.IsValid)
+    {
+      TempData["Error"] = ModelState.Values.SelectMany(v => v.Errors).First().ErrorMessage;
+      return RedirectToAction(nameof(Perfil));
+    }
+
+    var email = User.FindFirstValue(ClaimTypes.Email)!;
+    var usuario = _repoUsuario.ObtenerPorEmail(email);
+    if (usuario == null)
+    {
+      return NotFound();
+    }
+
+    if (!HashHelper.Verificar(model.ActualPassword, usuario.PasswordHash))
+    {
+      TempData["Error"] = "La contraseña actual no es correcta";
+      return RedirectToAction(nameof(Perfil));
+    }
+
+    _repoUsuario.ActualizarPassword(usuario.IdUsuario, HashHelper.Hashear(model.NuevaPassword));
+
+    TempData["Mensaje"] = "Contraseña actualizada";
+    return RedirectToAction(nameof(Perfil));
+  }
+
   //private, esto es lo que inica la sesion 
   private async Task IniciarSesionAsync(Usuario usuario, string nombreRol)
   {
