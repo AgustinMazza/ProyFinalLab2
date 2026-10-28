@@ -153,7 +153,7 @@ public class NegociosController : Controller
         existente.Telefono = telefono;
         _repoNegocio.Modificar(existente);
 
-        return Ok(new {ok = true });
+        return Ok(new { ok = true });
 
 
 
@@ -163,28 +163,35 @@ public class NegociosController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult Baja(int id)
     {
+        return CambiarEstado(id, false);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult Reactivar(int id)
+    {
         return CambiarEstado(id, true);
     }
 
 
 
 
-//metodos privaos
+    //metodos privaos
 
 
 
-private IActionResult CambiarEstado(int id, bool activo)
-  {
-    var negocio = _repoNegocio.ObtenerPorId(id);
-    if (negocio == null)
-      return NotFound();
+    private IActionResult CambiarEstado(int id, bool activo)
+    {
+        var negocio = _repoNegocio.ObtenerPorId(id);
+        if (negocio == null)
+            return NotFound();
 
-    if (!PuedeAdministrar(negocio))
-      return Prohibido();
+        if (!PuedeAdministrar(negocio))
+            return Prohibido();
 
-    _repoNegocio.CambiarEstado(id, activo);
-    return Ok(new { ok = true });
-  }
+        _repoNegocio.CambiarEstado(id, activo);
+        return Ok(new { ok = true });
+    }
 
     private int ResolverDuenio(NegocioFormViewModel model, Negocio? existente, out string? error)
     {

@@ -43,7 +43,7 @@ public class RepositorioNegocio
         return lista;
     }
 
-    public int Contar(string buscar, int idCategoria)
+    public int ContarPublico(string buscar, int idCategoria)
     {
         using var connection = new MySqlConnection(_connectionString);
         var sql = @"SELECT COUNT(*) FROM negocios n
@@ -58,13 +58,13 @@ public class RepositorioNegocio
         return Convert.ToInt32(command.ExecuteScalar());
     }
 
-    public List<NegocioListado> ListarPaginado(string buscar, int idCategoria, int pagina, int tamano)
+    public List<NegocioListado> ListarPaginadoPublico(string buscar, int idCategoria, int pagina, int tamano)
     {
         var lista = new List<NegocioListado>();
 
         using var connection = new MySqlConnection(_connectionString);
         var sql = @"SELECT n.IdNegocio, n.Nombre, n.Descripcion, n.Direccion, n.Ciudad, n.Telefono, n.LogoUrl,
-                       c.Nombre AS Categoria,
+                       c.Nombre AS CategoriaNombre,
                        (SELECT COUNT(*) FROM recursos r
                          WHERE r.IdNegocio = n.IdNegocio AND r.Activo = 1) AS CantidadRecursos
                 FROM negocios n
@@ -94,7 +94,7 @@ public class RepositorioNegocio
                 Ciudad = reader.IsDBNull(reader.GetOrdinal("Ciudad")) ? null : reader.GetString("Ciudad"),
                 Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
                 LogoUrl = reader.IsDBNull(reader.GetOrdinal("LogoUrl")) ? null : reader.GetString("LogoUrl"),
-                Categoria = reader.GetString("Categoria"),
+                CategoriaNombre = reader.GetString("CategoriaNombre"),
                 CantidadRecursos = Convert.ToInt32(reader["CantidadRecursos"]),
             });
         }
@@ -297,7 +297,7 @@ public class RepositorioNegocio
 
 
     }
-    
+
     //ete metodo es pa el paginado de lo negocio, trae solo 10 negocios de la pagina actual los cuales ya estan filtados por busqueda, dueño 
     // y con el nombre  de la categorio y del dueño :d
 
