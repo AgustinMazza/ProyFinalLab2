@@ -1,8 +1,78 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+  ViewData["Title"] = "Inicio";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<style>
+  [v-cloak] {
+    display: none;
+  }
+</style>
+
+<div id="app" v-cloak>
+  <div class="text-center py-4">
+    <h1 class="display-5">Reservá tu cancha</h1>
+    <p class="text-muted">Buscá un complejo, elegí cancha y horario.</p>
+  </div>
+
+  <div class="row g-2 mb-3">
+    <div class="col-md-8">
+      <input type="text" class="form-control" placeholder="Buscar por nombre, dirección o ciudad"
+             v-model="buscar" v-on:input="buscarConPausa" />
+    </div>
+    <div class="col-md-4">
+      <select class="form-select" v-model="idCategoria" v-on:change="filtrar">
+        <option :value="0">Todos los rubros</option>
+        <option v-for="c in categorias" :key="c.idCategoria" :value="c.idCategoria">{{ c.nombre }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div v-if="error" class="alert alert-danger">{{ error }}</div>
+
+  <p class="text-muted small">{{ total }} {{ total === 1 ? 'resultado' : 'resultados' }}</p>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" :class="{ 'opacity-50': cargando }">
+    <div class="col" v-for="n in negocios" :key="n.idNegocio">
+      <div class="card h-100 shadow-sm">
+        <img v-if="n.logoUrl" :src="n.logoUrl" class="card-img-top" alt="" style="height: 160px; object-fit: cover" />
+        <div v-else class="bg-light d-flex align-items-center justify-content-center text-muted display-4"
+             style="height: 160px">
+          {{ n.nombre.charAt(0) }}
+        </div>
+        <div class="card-body d-flex flex-column">
+          <span class="badge bg-primary align-self-start mb-2">{{ n.categoria }}</span>
+          <h5 class="card-title">{{ n.nombre }}</h5>
+          <p class="card-text text-muted small mb-1">{{ n.direccion }}, {{ n.ciudad }}</p>
+          <p class="card-text small">{{ n.descripcion }}</p>
+          <div class="mt-auto d-flex justify-content-between align-items-center">
+            <small class="text-muted">{{ n.cantidadRecursos }} para reservar</small>
+            <a :href="'/Negocios/Detalle/' + n.idNegocio" class="btn btn-sm btn-primary">Ver y reservar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p v-if="!cargando && negocios.length === 0" class="text-center text-muted mt-4">
+    No encontramos complejos con esos filtros
+  </p>
+
+  <nav v-if="totalPaginas > 1" class="mt-4">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" :class="{ disabled: pagina === 1 }">
+        <button class="page-link" v-on:click="irAPagina(pagina - 1)">Anterior</button>
+      </li>
+      <li v-for="n in totalPaginas" :key="n" class="page-item" :class="{ active: n === pagina }">
+        <button class="page-link" v-on:click="irAPagina(n)">{{ n }}</button>
+      </li>
+      <li class="page-item" :class="{ disabled: pagina === totalPaginas }">
+        <button class="page-link" v-on:click="irAPagina(pagina + 1)">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
 </div>
+
+@section Scripts {
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+  <script src="~/js/negocios.js" asp-append-version="true"></script>
+}
