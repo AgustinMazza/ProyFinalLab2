@@ -20,12 +20,12 @@
       @if (!string.IsNullOrEmpty(Model.Avatar))
       {
         <img src="@Model.Avatar" alt="Avatar" class="rounded-circle"
-            style="width:150px; height:150px; object-fit:cover;" />
+             style="width:150px; height:150px; object-fit:cover;" />
       }
       else
       {
         <div class="rounded-circle bg-secondary text-white d-inline-flex align-items-center justify-content-center"
-            style="width:150px; height:150px; font-size:3rem;">
+             style="width:150px; height:150px; font-size:3rem;">
           @Model.Nombre[0]
         </div>
       }
@@ -98,6 +98,10 @@
           <div class="mb-3">
             <label class="form-label">Repetir contraseña nueva</label>
             <input type="password" name="ConfirmarPassword" class="form-control" />
+          </div>
+          <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input ver-passwords" id="verPasswords" />
+            <label class="form-check-label" for="verPasswords">Mostrar contraseñas</label>
           </div>
           <button type="submit" class="btn btn-primary">Cambiar contraseña</button>
         </form>

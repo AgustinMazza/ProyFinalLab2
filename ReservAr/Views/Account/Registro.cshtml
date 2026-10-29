@@ -1,61 +1,66 @@
 @model ReservAr.ViewModels.RegistroViewModel
 @{
-    ViewData["Title"] = "Registro";
+  ViewData["Title"] = "Registro";
 }
 
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <h2 class="mb-4">Crear cuenta</h2>
+  <div class="col-md-6">
+    <h2 class="mb-4">Crear cuenta</h2>
 
-        <form asp-action="Registro" method="post">
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <form asp-action="Registro" method="post">
+      <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="Nombre" class="form-label">Nombre</label>
-                    <input asp-for="Nombre" class="form-control" />
-                    <span asp-validation-for="Nombre" class="text-danger"></span>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label asp-for="Apellido" class="form-label">Apellido</label>
-                    <input asp-for="Apellido" class="form-control" />
-                    <span asp-validation-for="Apellido" class="text-danger"></span>
-                </div>
-            </div>
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label asp-for="Nombre" class="form-label">Nombre</label>
+          <input asp-for="Nombre" class="form-control" />
+          <span asp-validation-for="Nombre" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label asp-for="Apellido" class="form-label">Apellido</label>
+          <input asp-for="Apellido" class="form-control" />
+          <span asp-validation-for="Apellido" class="text-danger"></span>
+        </div>
+      </div>
 
-            <div class="mb-3">
-                <label asp-for="Email" class="form-label">Email</label>
-                <input asp-for="Email" class="form-control" autocomplete="username" />
-                <span asp-validation-for="Email" class="text-danger"></span>
-            </div>
+      <div class="mb-3">
+        <label asp-for="Email" class="form-label">Email</label>
+        <input asp-for="Email" class="form-control" autocomplete="username" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+      </div>
 
-            <div class="mb-3">
-                <label asp-for="Telefono" class="form-label">Teléfono (opcional)</label>
-                <input asp-for="Telefono" class="form-control" />
-                <span asp-validation-for="Telefono" class="text-danger"></span>
-            </div>
+      <div class="mb-3">
+        <label asp-for="Telefono" class="form-label">Teléfono (opcional)</label>
+        <input asp-for="Telefono" class="form-control" />
+        <span asp-validation-for="Telefono" class="text-danger"></span>
+      </div>
 
-            <div class="mb-3">
-                <label asp-for="Password" class="form-label">Contraseña</label>
-                <input asp-for="Password" class="form-control" autocomplete="new-password" />
-                <span asp-validation-for="Password" class="text-danger"></span>
-            </div>
+      <div class="mb-3">
+        <label asp-for="Password" class="form-label">Contraseña</label>
+        <input asp-for="Password" class="form-control" autocomplete="new-password" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+      </div>
 
-            <div class="mb-3">
-                <label asp-for="ConfirmarPassword" class="form-label">Repetir contraseña</label>
-                <input asp-for="ConfirmarPassword" class="form-control" autocomplete="new-password" />
-                <span asp-validation-for="ConfirmarPassword" class="text-danger"></span>
-            </div>
+      <div class="mb-3">
+        <label asp-for="ConfirmarPassword" class="form-label">Repetir contraseña</label>
+        <input asp-for="ConfirmarPassword" class="form-control" autocomplete="new-password" />
+        <span asp-validation-for="ConfirmarPassword" class="text-danger"></span>
+      </div>
 
-            <button type="submit" class="btn btn-primary w-100">Crear cuenta</button>
-        </form>
+      <div class="form-check mb-3">
+        <input type="checkbox" class="form-check-input ver-passwords" id="verPasswords" />
+        <label class="form-check-label" for="verPasswords">Mostrar contraseña</label>
+      </div>
 
-        <p class="mt-3 text-center">
-            ya tenes cuenta? <a asp-action="Login">Inicia sesion!</a>
-        </p>
-    </div>
+      <button type="submit" class="btn btn-primary w-100">Crear cuenta</button>
+    </form>
+
+    <p class="mt-3 text-center">
+      ya tenes cuenta? <a asp-action="Login">Inicia sesion!</a>
+    </p>
+  </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+  <partial name="_ValidationScriptsPartial" />
 }
