@@ -15,7 +15,7 @@
 
   <div class="d-flex justify-content-between mb-3">
     <input type="text" class="form-control w-50" placeholder="Buscar por nombre, apellido o email" v-model="buscar"
-          v-on:input="buscarConPausa" />
+           v-on:input="buscarConPausa" />
     <button class="btn btn-primary" v-on:click="nuevo">Nuevo usuario</button>
   </div>
 
@@ -55,7 +55,11 @@
           </div>
           <div class="col-md-6" v-if="form.idUsuario === 0">
             <label class="form-label">Contraseña</label>
-            <input type="password" class="form-control" v-model="form.password" />
+            <input type="password" name="Password" class="form-control" v-model="form.password" />
+            <div class="form-check mt-2">
+              <input type="checkbox" class="form-check-input ver-passwords" id="verPasswords" />
+              <label class="form-check-label" for="verPasswords">Mostrar contraseña</label>
+            </div>
           </div>
         </div>
 
