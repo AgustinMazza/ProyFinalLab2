@@ -12,15 +12,21 @@ public class RepositorioUsuario
     _connectionString = configuration.GetConnectionString("DefaultConnection")!;
   }
 
-  public List<Usuario> Listar(bool incluirInactivos = false)
+  public List<Usuario> BuscarPorRol(string buscar, int idRol, int limite)
   {
     var lista = new List<Usuario>();
 
     using var connection = new MySqlConnection(_connectionString);
-    var sql = "SELECT IdUsuario, IdRol, Nombre, Apellido, Email, Telefono, Avatar, Activo, FechaAlta FROM usuarios " +
-              (incluirInactivos ? "" : "WHERE Activo = 1 ") +
-              "ORDER BY FechaAlta ASC";
+    var sql = @"SELECT IdUsuario, IdRol, Nombre, Apellido, Email, Activo
+              FROM usuarios
+              WHERE IdRol = @idRol AND Activo = 1
+              AND (Nombre LIKE @patron OR Apellido LIKE @patron OR Email LIKE @patron)
+              ORDER BY Apellido, Nombre
+              LIMIT @limite";
     using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@idRol", idRol);
+    command.Parameters.AddWithValue("@patron", "%" + buscar + "%");
+    command.Parameters.AddWithValue("@limite", limite);
 
     connection.Open();
     using var reader = command.ExecuteReader();
@@ -34,16 +40,12 @@ public class RepositorioUsuario
         Nombre = reader.GetString("Nombre"),
         Apellido = reader.GetString("Apellido"),
         Email = reader.GetString("Email"),
-        Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
-        Avatar = reader.IsDBNull(reader.GetOrdinal("Avatar")) ? null : reader.GetString("Avatar"),
-        Activo = reader.GetBoolean("Activo"),
-        FechaAlta = reader.GetDateTime("FechaAlta")
+        Activo = reader.GetBoolean("Activo")
       });
     }
 
     return lista;
   }
-
   public int Contar(string buscar)
   {
     using var connection = new MySqlConnection(_connectionString);
