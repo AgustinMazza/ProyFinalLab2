@@ -65,6 +65,7 @@ CREATE TABLE negocios (
     Telefono     VARCHAR(30)  NULL,
     LogoUrl      VARCHAR(300) NULL,
     Activo       BOOLEAN      NOT NULL DEFAULT 1,
+    Estado       TINYINT      NOT NULL DEFAULT 1,
     CONSTRAINT fk_negocios_categoria FOREIGN KEY (IdCategoria) REFERENCES categorias (IdCategoria),
     CONSTRAINT fk_negocios_usuario   FOREIGN KEY (IdUsuario)   REFERENCES usuarios (IdUsuario)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

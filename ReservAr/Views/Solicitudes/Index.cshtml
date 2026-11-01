@@ -1,0 +1,104 @@
+@model ReservAr.ViewModels.SolicitudesViewModel
+@{
+  ViewData["Title"] = "Crear negocio";
+}
+
+<h2 class="mb-4">Crear negocio</h2>
+
+@if (TempData["Mensaje"] != null)
+{
+  <div class="alert alert-success">@TempData["Mensaje"]</div>
+}
+
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">Solicitar un negocio nuevo</h5>
+    <p class="text-muted">
+      Completá los datos. Un administrador va a revisar tu solicitud: si la aprueba, vas a pasar a ser Admin
+      y vas a poder gestionar tu negocio (tenés que cerrar sesión y volver a ingresar).
+    </p>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <form asp-action="Crear" method="post">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label asp-for="Form.Nombre" class="form-label">Nombre</label>
+          <input asp-for="Form.Nombre" class="form-control" maxlength="150" />
+        </div>
+        <div class="col-md-6">
+          <label asp-for="Form.IdCategoria" class="form-label">Categoría</label>
+          <select asp-for="Form.IdCategoria" class="form-select">
+            <option value="0">Elegí una categoría</option>
+            @foreach (var c in Model.Categorias)
+            {
+              <option value="@c.IdCategoria">@c.Nombre</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label asp-for="Form.Direccion" class="form-label">Dirección</label>
+          <input asp-for="Form.Direccion" class="form-control" maxlength="200" />
+        </div>
+        <div class="col-md-6">
+          <label asp-for="Form.Ciudad" class="form-label">Ciudad</label>
+          <input asp-for="Form.Ciudad" class="form-control" maxlength="100" />
+        </div>
+        <div class="col-md-6">
+          <label asp-for="Form.Telefono" class="form-label">Teléfono</label>
+          <input asp-for="Form.Telefono" class="form-control" maxlength="30" />
+        </div>
+        <div class="col-12">
+          <label asp-for="Form.Descripcion" class="form-label">Descripción</label>
+          <textarea asp-for="Form.Descripcion" class="form-control" rows="3" maxlength="500"></textarea>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary mt-3">Enviar solicitud</button>
+    </form>
+  </div>
+</div>
+
+<h5>Mis solicitudes</h5>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Categoría</th>
+      <th>Dirección</th>
+      <th>Estado</th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (var s in Model.Solicitudes)
+    {
+      <tr>
+        <td>@s.Nombre</td>
+        <td>@s.CategoriaNombre</td>
+        <td>@s.Direccion, @s.Ciudad</td>
+        <td>
+          @if (s.Estado == EstadoNegocio.Pendiente)
+          {
+            <span class="badge bg-warning text-dark">Pendiente</span>
+          }
+          else if (s.Estado == EstadoNegocio.Aprobado)
+          {
+            <span class="badge bg-success">Aprobada</span>
+            <div class="small text-success mt-1">
+              ¡Felicidades, se aprobó tu negocio! Cerrá sesión y volvé a ingresar para administrarlo.
+            </div>
+          }
+          else
+          {
+            <span class="badge bg-danger">Rechazada</span>
+          }
+        </td>
+      </tr>
+    }
+    @if (!Model.Solicitudes.Any())
+    {
+      <tr>
+        <td colspan="4" class="text-center text-muted">Todavía no enviaste solicitudes</td>
+      </tr>
+    }
+  </tbody>
+</table>

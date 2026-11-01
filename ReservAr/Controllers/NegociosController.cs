@@ -45,9 +45,9 @@ public class NegociosController : Controller
     if (pagina < 1) pagina = 1;
 
     var idDuenio = FiltroDuenio();
-    var total = _repoNegocio.Contar(buscar, idDuenio);
+    var total = _repoNegocio.Contar(buscar, idDuenio, EstadoNegocio.Aprobado);
     var totalPaginas = (int)Math.Ceiling(total / (double)TamanoPagina);
-    var negocios = _repoNegocio.ListarPaginado(buscar, pagina, TamanoPagina, idDuenio);
+    var negocios = _repoNegocio.ListarPaginado(buscar, pagina, TamanoPagina, idDuenio, EstadoNegocio.Aprobado);
 
     var items = negocios.Select(n => new
     {
@@ -160,14 +160,14 @@ public class NegociosController : Controller
   [ValidateAntiForgeryToken]
   public IActionResult Baja(int id)
   {
-    return CambiarEstado(id, false);
+    return CambiarActivo(id, false);
   }
 
   [HttpPost]
   [ValidateAntiForgeryToken]
   public IActionResult Reactivar(int id)
   {
-    return CambiarEstado(id, true);
+    return CambiarActivo(id, true);
   }
 
 
@@ -177,7 +177,7 @@ public class NegociosController : Controller
 
 
 
-  private IActionResult CambiarEstado(int id, bool activo)
+  private IActionResult CambiarActivo(int id, bool activo)
   {
     var negocio = _repoNegocio.ObtenerPorId(id);
     if (negocio == null)
@@ -186,7 +186,7 @@ public class NegociosController : Controller
     if (!PuedeAdministrar(negocio))
       return Prohibido();
 
-    _repoNegocio.CambiarEstado(id, activo);
+    _repoNegocio.CambiarActivo(id, activo);
     return Ok(new { ok = true });
   }
 

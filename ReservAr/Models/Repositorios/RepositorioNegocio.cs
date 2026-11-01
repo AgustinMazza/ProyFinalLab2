@@ -204,10 +204,10 @@ public class RepositorioNegocio
     using var connection = new MySqlConnection(_connectionString);
     var sql = "INSERT INTO negocios " +
             "(IdCategoria, IdUsuario, Nombre, Descripcion," +
-            " Direccion, Ciudad, Telefono, LogoUrl, Activo)" +
+            " Direccion, Ciudad, Telefono, LogoUrl, Activo, Estado)" +
             "VALUES " +
             "(@IdCategoria, @IdUsuario, @Nombre, @Descripcion, " +
-            " @Direccion, @Ciudad, @Telefono, @LogoUrl, @Activo);" +
+            " @Direccion, @Ciudad, @Telefono, @LogoUrl, @Activo, @Estado);" +
             "SELECT LAST_INSERT_ID();";
 
     using var command = new MySqlCommand(sql, connection);
@@ -221,6 +221,7 @@ public class RepositorioNegocio
     command.Parameters.AddWithValue("@Telefono", (object?)negocio.Telefono ?? DBNull.Value);
     command.Parameters.AddWithValue("@LogoUrl", (object?)negocio.LogoUrl ?? DBNull.Value);
     command.Parameters.AddWithValue("@Activo", negocio.Activo);
+    command.Parameters.AddWithValue("@Estado", (byte)negocio.Estado);
 
     connection.Open();
 
@@ -264,7 +265,7 @@ public class RepositorioNegocio
     return command.ExecuteNonQuery();
   }
 
-  public int CambiarEstado(int id, bool activo)
+  public int CambiarActivo(int id, bool activo)
   {
     using var connection = new MySqlConnection(_connectionString);
     var sql = "UPDATE negocios SET Activo = @activo WHERE IdNegocio = @id";
@@ -277,19 +278,85 @@ public class RepositorioNegocio
     return command.ExecuteNonQuery();
   }
 
+  public bool Aprobar(int idNegocio, int idRolAdmin)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "UPDATE negocios n " +
+              "INNER JOIN usuarios u ON u.IdUsuario = n.IdUsuario " +
+              "SET n.Estado = @aprobado, n.Activo = 1, u.IdRol = @idRolAdmin " +
+              "WHERE n.IdNegocio = @id AND n.Estado = @pendiente";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@aprobado", (byte)EstadoNegocio.Aprobado);
+    command.Parameters.AddWithValue("@pendiente", (byte)EstadoNegocio.Pendiente);
+    command.Parameters.AddWithValue("@idRolAdmin", idRolAdmin);
+    command.Parameters.AddWithValue("@id", idNegocio);
+
+    connection.Open();
+    return command.ExecuteNonQuery() > 0;
+  }
+
+  public bool Rechazar(int idNegocio)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "UPDATE negocios SET Estado = @rechazado, Activo = 0 " +
+              "WHERE IdNegocio = @id AND Estado = @pendiente";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@rechazado", (byte)EstadoNegocio.Rechazado);
+    command.Parameters.AddWithValue("@pendiente", (byte)EstadoNegocio.Pendiente);
+    command.Parameters.AddWithValue("@id", idNegocio);
+
+    connection.Open();
+    return command.ExecuteNonQuery() > 0;
+  }
+
+  public List<NegocioListado> ListarSolicitudesDeUsuario(int idUsuario)
+  {
+    var lista = new List<NegocioListado>();
+
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "SELECT n.IdNegocio, n.Nombre, n.Direccion, n.Ciudad, n.Estado, " +
+              "c.Nombre AS CategoriaNombre " +
+              "FROM negocios n " +
+              "INNER JOIN categorias c ON c.IdCategoria = n.IdCategoria " +
+              "WHERE n.IdUsuario = @idUsuario " +
+              "ORDER BY n.IdNegocio DESC " +
+              "LIMIT 20";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@idUsuario", idUsuario);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+
+    while (reader.Read())
+    {
+      lista.Add(new NegocioListado
+      {
+        IdNegocio = reader.GetInt32("IdNegocio"),
+        Nombre = reader.GetString("Nombre"),
+        Direccion = reader.GetString("Direccion"),
+        Ciudad = reader.GetString("Ciudad"),
+        Estado = (EstadoNegocio)reader.GetInt32("Estado"),
+        CategoriaNombre = reader.GetString("CategoriaNombre")
+      });
+    }
+
+    return lista;
+  }
 
   // este metodo contar devuelve la cantidad de negocios q cumplen con la busqueda, es mas q todo para calcular el numero de paginas 
 
-  public int Contar(string buscar, int? idUsuario)
+  public int Contar(string buscar, int? idUsuario, EstadoNegocio estado)
   {
     using var connection = new MySqlConnection(_connectionString);
     var sql = "SELECT COUNT(*) FROM negocios n " +
                 "INNER JOIN usuarios u ON u.IdUsuario = n.IdUsuario " +
                 "WHERE (n.Nombre LIKE @patron OR n.Direccion LIKE @patron OR n.Ciudad LIKE @patron " +
                 "OR CONCAT(u.Nombre, ' ', u.Apellido) LIKE @patron) " +
+                "AND n.Estado = @estado " +
                 "AND (@idUsuario IS NULL OR n.IdUsuario = @idUsuario)";
 
     using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@estado", (byte)estado);
     command.Parameters.AddWithValue("@patron", "%" + buscar + "%");
     command.Parameters.AddWithValue("@idUsuario", (object?)idUsuario ?? DBNull.Value);
 
@@ -303,8 +370,7 @@ public class RepositorioNegocio
   //ete metodo es pa el paginado de lo negocio, trae solo 10 negocios de la pagina actual los cuales ya estan filtados por busqueda, dueño 
   // y con el nombre  de la categorio y del dueño :d
 
-
-  public List<NegocioListado> ListarPaginado(string buscar, int pagina, int tamano, int? idUsuario)
+  public List<NegocioListado> ListarPaginado(string buscar, int pagina, int tamano, int? idUsuario, EstadoNegocio estado)
   {
     var lista = new List<NegocioListado>();
 
@@ -318,12 +384,14 @@ public class RepositorioNegocio
     "INNER JOIN categorias c ON c.IdCategoria = n.IdCategoria " +
     "INNER JOIN usuarios u ON u.IdUsuario = n.IdUsuario " +
     "WHERE (n.Nombre LIKE @patron OR n.Direccion LIKE @patron OR n.Ciudad LIKE @patron " +
-    "OR CONCAT(u.Nombre, ' ', u.Apellido) LIKE @patron) " + 
+    "OR CONCAT(u.Nombre, ' ', u.Apellido) LIKE @patron) " +
+    "AND n.Estado = @estado " +
     "AND (@idUsuario IS NULL OR n.IdUsuario = @idUsuario) " +
     "ORDER BY n.Nombre " +
     "LIMIT @tamano OFFSET @salto";
 
     using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@estado", (byte)estado);
     command.Parameters.AddWithValue("@patron", "%" + buscar + "%");
     command.Parameters.AddWithValue("@idUsuario", (object?)idUsuario ?? DBNull.Value);
     command.Parameters.AddWithValue("@tamano", tamano);

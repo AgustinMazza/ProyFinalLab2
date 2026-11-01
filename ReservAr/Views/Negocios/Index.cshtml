@@ -20,7 +20,13 @@
   <div class="d-flex justify-content-between mb-3">
     <input type="text" class="form-control w-50" :placeholder="esSuperAdmin ? 'Buscar por nombre, dirección o dueño' : 'Buscar por nombre o dirección'" v-model="buscar"
           v-on:input="buscarConPausa" />
-    <button class="btn btn-primary" v-on:click="nuevo">Nuevo negocio</button>
+    <div>
+      @if (esSuperAdmin)
+      {
+        <a asp-controller="Peticiones" asp-action="Index" class="btn btn-outline-secondary me-2">Peticiones</a>
+      }
+      <button class="btn btn-primary" v-on:click="nuevo">Nuevo negocio</button>
+    </div>
   </div>
 
   <div v-if="mostrarForm" class="card mb-4">

@@ -1,0 +1,67 @@
+@{
+  ViewData["Title"] = "Peticiones de negocios";
+}
+
+<style>
+  [v-cloak] {
+    display: none;
+  }
+</style>
+
+@Html.AntiForgeryToken()
+
+<div id="app" v-cloak>
+  <h2 class="mb-4">@ViewData["Title"]</h2>
+
+  <div class="d-flex justify-content-between mb-3">
+    <input type="text" class="form-control w-50" placeholder="Buscar por nombre, dirección o solicitante"
+          v-model="buscar" v-on:input="buscarConPausa" />
+    <a asp-controller="Negocios" asp-action="Index" class="btn btn-outline-secondary">Volver a Negocios</a>
+  </div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Dirección</th>
+        <th>Solicitante</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="p in peticiones" :key="p.idNegocio">
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.categoria }}</td>
+        <td>{{ p.direccion }}, {{ p.ciudad }}</td>
+        <td>{{ p.solicitante }}</td>
+        <td class="text-end">
+          <button class="btn btn-sm btn-success" v-on:click="aprobar(p)">Aprobar</button>
+          <button class="btn btn-sm btn-outline-danger" v-on:click="rechazar(p)">Rechazar</button>
+        </td>
+      </tr>
+      <tr v-if="peticiones.length === 0">
+        <td colspan="5" class="text-center text-muted">No hay peticiones pendientes</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <nav v-if="totalPaginas > 1">
+    <ul class="pagination">
+      <li class="page-item" :class="{ disabled: pagina === 1 }">
+        <button class="page-link" v-on:click="irAPagina(pagina - 1)">Anterior</button>
+      </li>
+      <li v-for="n in totalPaginas" :key="n" class="page-item" :class="{ active: n === pagina }">
+        <button class="page-link" v-on:click="irAPagina(n)">{{ n }}</button>
+      </li>
+      <li class="page-item" :class="{ disabled: pagina === totalPaginas }">
+        <button class="page-link" v-on:click="irAPagina(pagina + 1)">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+@section Scripts {
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+  <script src="~/js/peticiones.js" asp-append-version="true"></script>
+}
