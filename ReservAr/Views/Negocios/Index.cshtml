@@ -23,7 +23,7 @@
     <div>
       @if (esSuperAdmin)
       {
-        <a asp-controller="Peticiones" asp-action="Index" class="btn btn-outline-secondary me-2">Peticiones</a>
+        <a asp-controller="Peticiones" asp-action="Index" class="btn btn-superadmin me-2">Peticiones</a>
       }
       <button class="btn btn-primary" v-on:click="nuevo">Nuevo negocio</button>
     </div>

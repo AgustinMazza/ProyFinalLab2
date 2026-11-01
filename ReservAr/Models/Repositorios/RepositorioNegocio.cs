@@ -64,7 +64,7 @@ public class RepositorioNegocio
 
     using var connection = new MySqlConnection(_connectionString);
     var sql = @"SELECT n.IdNegocio, n.Nombre, n.Descripcion, n.Direccion, n.Ciudad, n.Telefono, n.LogoUrl,
-                      c.Nombre AS CategoriaNombre,
+                      c.Nombre AS CategoriaNombre, c.Icono AS CategoriaIcono,
                       (SELECT COUNT(*) FROM recursos r
                 WHERE r.IdNegocio = n.IdNegocio AND r.Activo = 1) AS CantidadRecursos
                 FROM negocios n
@@ -95,6 +95,7 @@ public class RepositorioNegocio
         Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
         LogoUrl = reader.IsDBNull(reader.GetOrdinal("LogoUrl")) ? null : reader.GetString("LogoUrl"),
         CategoriaNombre = reader.GetString("CategoriaNombre"),
+        CategoriaIcono = reader.IsDBNull(reader.GetOrdinal("CategoriaIcono")) ? null : reader.GetString("CategoriaIcono"),
         CantidadRecursos = Convert.ToInt32(reader["CantidadRecursos"]),
       });
     }

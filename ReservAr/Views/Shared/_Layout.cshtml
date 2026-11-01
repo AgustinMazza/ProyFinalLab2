@@ -22,54 +22,52 @@
         </button>
         <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
           <ul class="navbar-nav flex-grow-1">
-            <ul class="navbar-nav">
-              @if (User.Identity?.IsAuthenticated == true)
-              {
-                <li class="nav-item">
-                  <a class="nav-link text-dark" asp-controller="Account" asp-action="Perfil">Hola, @User.Identity.Name</a>
-                </li>
-                <li class="nav-item">
-                  <form asp-controller="Account" asp-action="Logout" method="post">
-                    <button type="submit" class="btn btn-link nav-link text-dark">Salir</button>
-                  </form>
-                </li>
-              }
-              else
-              {
-                <li class="nav-item">
-                  <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Ingresar</a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link text-dark" asp-controller="Account" asp-action="Registro">Registrarse</a>
-                </li>
-              }
-            </ul>
             <li class="nav-item">
               <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-            </li>
-            @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.SuperAdmin))
-            {
-              <li class="nav-item">
-                <a class="nav-link text-dark" asp-controller="Negocios"
-                  asp-action="Index">@(User.IsInRole(Roles.SuperAdmin) ? "Negocios" : "Mis negocios")</a>
-              </li>
-            }
             @if (User.IsInRole(Roles.Usuario))
             {
               <li class="nav-item">
-                <a class="nav-link text-dark" asp-controller="Solicitudes" asp-action="Index">Crear negocio</a>
+                <a class="nav-link rol-usuario" asp-controller="Solicitudes" asp-action="Index">Crear negocio</a>
+              </li>
+            }
+            @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.SuperAdmin))
+            {
+              <li class="nav-item">
+                <a class="nav-link rol-admin" asp-controller="Negocios"
+                  asp-action="Index">@(User.IsInRole(Roles.SuperAdmin) ? "Negocios" : "Mis negocios")</a>
               </li>
             }
             @if (User.IsInRole(Roles.SuperAdmin))
             {
               <li class="nav-item">
-                <a class="nav-link text-dark" asp-controller="Categorias" asp-action="Index">Categorías</a>
+                <a class="nav-link rol-superadmin" asp-controller="Categorias" asp-action="Index">Categorías</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-dark" asp-controller="Usuarios" asp-action="Index">Usuarios</a>
+                <a class="nav-link rol-superadmin" asp-controller="Usuarios" asp-action="Index">Usuarios</a>
+              </li>
+            }
+          </ul>
+
+          <ul class="navbar-nav">
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+              <li class="nav-item">
+                <a class="nav-link text-dark" asp-controller="Account" asp-action="Perfil">Hola, @User.Identity.Name</a>
+              </li>
+              <li class="nav-item d-flex align-items-center ms-sm-2">
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                  <button type="submit" class="btn btn-sm btn-outline-danger">Salir</button>
+                </form>
+              </li>
+            }
+            else
+            {
+              <li class="nav-item">
+                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Ingresar</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-dark" asp-controller="Account" asp-action="Registro">Registrarse</a>
               </li>
             }
           </ul>
@@ -85,7 +83,7 @@
 
   <footer class="border-top footer text-muted">
     <div class="container">
-      &copy; 2026 - ReservAr - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+      &copy; 2026 - ReservAr - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacidad</a>
     </div>
   </footer>
   <script src="~/lib/jquery/dist/jquery.min.js"></script>

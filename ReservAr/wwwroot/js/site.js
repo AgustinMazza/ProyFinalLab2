@@ -13,3 +13,13 @@ document.addEventListener("change", function (e) {
       input.type = tipo;
     });
 });
+
+document.addEventListener("change", function (e) {
+  if (e.target.id !== "selectorRubro") return;
+
+  const opcion = e.target.selectedOptions[0];
+  document.getElementById("Icono").value = e.target.value;
+  if (e.target.value) {
+    document.getElementById("Nombre").value = opcion.dataset.nombre;
+  }
+});

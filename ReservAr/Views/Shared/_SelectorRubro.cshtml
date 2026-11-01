@@ -1,0 +1,25 @@
+@model ReservAr.Models.Categoria
+@*
+  Rubros disponibles. Para agregar uno nuevo, sumá una línea con (emoji, nombre).
+*@
+@{
+  var rubros = new[]
+  {
+    ("⚽", "Fútbol"),
+    ("🏀", "Básquet"),
+    ("🩺", "Medico"),
+    ("💇🏽‍♂️💈💇🏼‍♀️", "Peluqueria"),
+  };
+}
+
+<div class="mb-3">
+  <label class="form-label">Rubro</label>
+  <select id="selectorRubro" class="form-select">
+    <option value="">Elegí un rubro</option>
+    @foreach (var (emoji, nombre) in rubros)
+    {
+      <option value="@emoji" data-nombre="@nombre" selected="@(Model?.Icono == emoji)">@emoji @nombre</option>
+    }
+  </select>
+  <input type="hidden" asp-for="Icono" />
+</div>
