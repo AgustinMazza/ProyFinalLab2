@@ -9,5 +9,10 @@
 
   "ConnectionStrings": {
     "DefaultConnection": "Server=localhost;Port=3306;Database=reservar;User=TuUsuario;Password=TuContraseña;"
+  },
+  "TokenAuthentication": {
+    "Issuer": "ReservAr",
+    "Audience": "ReservArApi",
+    "SecretKey": "Aca iria la clave ULTRASecreta del proyecto confindencial"
   }
 }
