@@ -1,0 +1,259 @@
+@model ReservAr.ViewModels.DetalleReservarViewModel
+
+@{
+    ViewData["Title"] = "Reservar cancha";
+
+    string[] dias =
+    {
+        "Domingo",
+        "Lunes",
+        "Martes",
+        "Miércoles",
+        "Jueves",
+        "Viernes",
+        "Sábado"
+    };
+}
+
+<div class="container py-4">
+
+    <!-- Información del recurso -->
+    <div class="mb-4">
+        <a asp-controller="Reservas" asp-action="Negocio" asp-route-id="@Model.Negocio.IdNegocio"
+           class="btn btn-outline-secondary btn-sm mb-3">
+
+            ← Volver al establecimiento
+
+        </a>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <h2 class="card-title">
+                    @Model.Recurso.Nombre
+                </h2>
+
+                <p class="text-muted mb-2">
+                    @Model.Negocio.Nombre
+                </p>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Recurso.Descripcion))
+                {
+                    <p>@Model.Recurso.Descripcion</p>
+                }
+
+                <p class="mb-0">
+                    <strong>Duración del turno:</strong>
+                    @Model.Recurso.DuracionMin minutos
+                </p>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Horarios de atención -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header">
+            <h4 class="mb-0">Horarios de atención</h4>
+        </div>
+
+        <div class="card-body">
+
+            @if (Model.Horarios == null || !Model.Horarios.Any())
+            {
+                <div class="alert alert-warning mb-0">
+                    Esta cancha todavía no tiene horarios de atención configurados.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+
+                        <thead>
+                            <tr>
+                                <th>Día</th>
+                                <th>Desde</th>
+                                <th>Hasta</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var horario in Model.Horarios)
+                            {
+                                <tr>
+                                    <td>
+                                        @(horario.DiaSemana >= 0 &&
+                                          horario.DiaSemana <= 6
+                                            ? dias[horario.DiaSemana]
+                                            : "Día no válido")
+                                    </td>
+
+                                    <td>
+                                        @horario.HoraDesde.ToString(@"hh\:mm")
+                                    </td>
+
+                                    <td>
+                                        @horario.HoraHasta.ToString(@"hh\:mm")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            }
+
+        </div>
+    </div>
+
+    <!-- Tarifas -->
+    <div class="card shadow-sm mb-4">
+
+        <div class="card-header">
+            <h4 class="mb-0">Tarifas</h4>
+        </div>
+
+        <div class="card-body">
+
+            @if (Model.Tarifas == null || !Model.Tarifas.Any())
+            {
+                <div class="alert alert-warning mb-0">
+                    Esta cancha todavía no tiene tarifas configuradas.
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+
+                        <thead>
+                            <tr>
+                                <th>Tarifa</th>
+                                <th>Desde</th>
+                                <th>Hasta</th>
+                                <th>Precio por hora</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach (var tarifa in Model.Tarifas)
+                            {
+                                <tr>
+                                    <td>@tarifa.Nombre</td>
+
+                                    <td>
+                                        @tarifa.HoraDesde.ToString(@"hh\:mm")
+                                    </td>
+
+                                    <td>
+                                        @tarifa.HoraHasta.ToString(@"hh\:mm")
+                                    </td>
+
+                                    <td>
+                                        @tarifa.PrecioHora.ToString("C")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            }
+
+        </div>
+    </div>
+    <div id="appReservas" data-recurso-id="@Model.Recurso.IdRecurso"
+         data-disponibilidad-url="@Url.Action("Disponibilidad", "Reservas")"
+         data-confirmar-url="@Url.Action("Confirmar", "Reservas")">
+        @Html.AntiForgeryToken()
+        <-- Sección de reserva -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Reservar cancha</h4>
+                </div>
+
+                <div class="card-body">
+                    <div class="mb-4">
+                        <label for="fechaReserva" class="form-label">
+                            Seleccioná una fecha
+                        </label>
+
+                        <input type="date" id="fechaReserva" class="form-control" v-model="fecha" :min="hoy" />
+                    </div>
+
+                    <div v-if="cargando" class="alert alert-info">
+                        Consultando disponibilidad...
+                    </div>
+
+                    <div v-if="error" class="alert alert-danger">
+                        {{ error }}
+                    </div>
+
+                    <div v-if="!cargando && !error">
+                        <h5 class="mb-3">Turnos disponibles</h5>
+
+                        <div v-if="turnos.length === 0" class="alert alert-warning">
+                            No hay turnos disponibles para esta fecha.
+                        </div>
+
+                        <div v-else class="row g-3">
+                            <div class="col-6 col-md-4 col-lg-3" v-for="turno in turnos" :key="turno.horaInicio">
+
+                                <button type="button" class="btn w-100" :class="turnoSeleccionado === turno
+                                    ? 'btn-primary'
+                                    : 'btn-outline-primary'" v-on:click="seleccionarTurno(turno)">
+
+                                    <strong>
+                                        {{ turno.horaInicio }} - {{ turno.horaFin }}
+                                    </strong>
+
+                                    <br />
+
+                                    {{ formatearPrecio(turno.precio) }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="turnoSeleccionado" class="card bg-light mt-4">
+
+                        <div class="card-body">
+                            <h5>Turno seleccionado</h5>
+
+                            <p class="mb-1">
+                                <strong>Fecha:</strong> {{ fecha }}
+                            </p>
+
+                            <p class="mb-1">
+                                <strong>Horario:</strong>
+                                {{ turnoSeleccionado.horaInicio }} -
+                                {{ turnoSeleccionado.horaFin }}
+                            </p>
+
+                            <p class="mb-0">
+                                <strong>Precio:</strong>
+                                {{ formatearPrecio(turnoSeleccionado.precio) }}
+                            </p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-success mt-3" v-on:click="confirmarReserva"
+                            :disabled="confirmando">
+                        {{ confirmando ? 'Confirmando...' : 'Confirmar reserva' }}
+                    </button>
+                    <div v-if="mensaje" class="alert alert-success mt-3">
+                        {{ mensaje }}
+                    </div>
+
+                    <div v-if="errorConfirmacion" class="alert alert-danger mt-3">
+                        {{ errorConfirmacion }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @section Scripts {
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.21/vue.global.prod.min.js"></script>
+            <script src="~/js/reserva.js" asp-append-version="true"></script>
+        }
