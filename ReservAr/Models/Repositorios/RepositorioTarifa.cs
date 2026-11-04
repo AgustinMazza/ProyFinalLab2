@@ -43,10 +43,37 @@ public class RepositorioTarifa
             });
         }
         return lista;
+    }
 
+    public List<Tarifa> ListarActivasPorRecurso(int idRecurso)
+    {
+        var lista = new List<Tarifa>();
 
+        using var connection = new MySqlConnection(_connectionString);
+        var sql = @"SELECT IdTarifa, IdRecurso, Nombre, HoraDesde, HoraHasta, PrecioHora, Activo
+                    FROM tarifas
+                    WHERE IdRecurso = @idRecurso AND Activo = 1
+                    ORDER BY HoraDesde";
+        using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@idRecurso", idRecurso);
 
+        connection.Open();
+        using var reader = command.ExecuteReader();
 
+        while (reader.Read())
+        {
+            lista.Add(new Tarifa
+            {
+                IdTarifa = reader.GetInt32("IdTarifa"),
+                IdRecurso = reader.GetInt32("IdRecurso"),
+                Nombre = reader.GetString("Nombre"),
+                HoraDesde = reader.GetTimeSpan("HoraDesde"),
+                HoraHasta = reader.GetTimeSpan("HoraHasta"),
+                PrecioHora = reader.GetDecimal("PrecioHora"),
+                Activo = reader.GetBoolean("Activo")
+            });
+        }
+        return lista;
     }
 
 

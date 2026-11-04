@@ -79,6 +79,83 @@ public class RepositorioReserva
     return lista;
   }
 
+  public int ContarDeUsuario(int idUsuario)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "SELECT COUNT(*) FROM reservas WHERE IdUsuario = @idUsuario";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@idUsuario", idUsuario);
+
+    connection.Open();
+    return Convert.ToInt32(command.ExecuteScalar());
+  }
+
+  public List<ReservaListado> ListarDeUsuario(int idUsuario, int pagina, int tamano)
+  {
+    var lista = new List<ReservaListado>();
+
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = @"SELECT r.IdReserva, r.Fecha, r.HoraInicio, r.HoraFin, r.Estado,
+                       rc.Nombre AS RecursoNombre
+                FROM reservas r
+                INNER JOIN recursos rc ON rc.IdRecurso = r.IdRecurso
+                WHERE r.IdUsuario = @idUsuario
+                ORDER BY r.Fecha DESC, r.HoraInicio DESC
+                LIMIT @tamano OFFSET @salto";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@idUsuario", idUsuario);
+    command.Parameters.AddWithValue("@tamano", tamano);
+    command.Parameters.AddWithValue("@salto", (pagina - 1) * tamano);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+    while (reader.Read())
+    {
+      lista.Add(new ReservaListado
+      {
+        IdReserva = reader.GetInt32("IdReserva"),
+        Fecha = reader.GetDateTime("Fecha"),
+        HoraInicio = reader.GetTimeSpan("HoraInicio"),
+        HoraFin = reader.GetTimeSpan("HoraFin"),
+        Estado = (EstadoReserva)reader.GetInt32("Estado"),
+        RecursoNombre = reader.GetString("RecursoNombre")
+      });
+    }
+
+    return lista;
+  }
+
+  public ReservaInfo? ObtenerInfoDeUsuario(int idReserva, int idUsuario)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = @"SELECT n.Nombre AS Complejo, n.Direccion, n.Ciudad, n.Descripcion AS DescripcionComplejo,
+                       n.Telefono, rc.Nombre AS Cancha, rc.Descripcion AS DescripcionCancha
+                FROM reservas r
+                INNER JOIN negocios n  ON n.IdNegocio  = r.IdNegocio
+                INNER JOIN recursos rc ON rc.IdRecurso = r.IdRecurso
+                WHERE r.IdReserva = @idReserva AND r.IdUsuario = @idUsuario";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@idReserva", idReserva);
+    command.Parameters.AddWithValue("@idUsuario", idUsuario);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+    if (reader.Read())
+    {
+      return new ReservaInfo
+      {
+        Complejo = reader.GetString("Complejo"),
+        Direccion = reader.GetString("Direccion"),
+        Ciudad = reader.GetString("Ciudad"),
+        DescripcionComplejo = reader.IsDBNull(reader.GetOrdinal("DescripcionComplejo")) ? null : reader.GetString("DescripcionComplejo"),
+        Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
+        Cancha = reader.GetString("Cancha"),
+        DescripcionCancha = reader.IsDBNull(reader.GetOrdinal("DescripcionCancha")) ? null : reader.GetString("DescripcionCancha")
+      };
+    }
+    return null;
+  }
+
   public int Crear(Reserva reserva)
   {
     using var connection = new MySqlConnection(_connectionString);
