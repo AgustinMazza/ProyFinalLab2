@@ -53,30 +53,29 @@
             <a :href="'/Reservas/Negocio/' + n.idNegocio" class="btn btn-sm btn-primary">
               Ver y reservar
             </a>
-          </a>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<p v-if="!cargando && negocios.length === 0" class="text-center text-muted mt-4">
-  No encontramos complejos con esos filtros
-</p>
+  <p v-if="!cargando && negocios.length === 0" class="text-center text-muted mt-4">
+    No encontramos complejos con esos filtros
+  </p>
 
-<nav v-if="totalPaginas > 1" class="mt-4">
-  <ul class="pagination justify-content-center">
-    <li class="page-item" :class="{ disabled: pagina === 1 }">
-      <button class="page-link" v-on:click="irAPagina(pagina - 1)">Anterior</button>
-    </li>
-    <li v-for="n in totalPaginas" :key="n" class="page-item" :class="{ active: n === pagina }">
-      <button class="page-link" v-on:click="irAPagina(n)">{{ n }}</button>
-    </li>
-    <li class="page-item" :class="{ disabled: pagina === totalPaginas }">
-      <button class="page-link" v-on:click="irAPagina(pagina + 1)">Siguiente</button>
-    </li>
-  </ul>
-</nav>
+  <nav v-if="totalPaginas > 1" class="mt-4">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" :class="{ disabled: pagina === 1 }">
+        <button class="page-link" v-on:click="irAPagina(pagina - 1)">Anterior</button>
+      </li>
+      <li v-for="n in totalPaginas" :key="n" class="page-item" :class="{ active: n === pagina }">
+        <button class="page-link" v-on:click="irAPagina(n)">{{ n }}</button>
+      </li>
+      <li class="page-item" :class="{ disabled: pagina === totalPaginas }">
+        <button class="page-link" v-on:click="irAPagina(pagina + 1)">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
 </div>
 
 @section Scripts {
