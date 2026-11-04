@@ -133,6 +133,17 @@ public class RepositorioNegocio
     return null;
   }
 
+  public bool EstaActivo(int idNegocio)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "SELECT COUNT(*) FROM negocios WHERE IdNegocio = @id AND Activo = 1";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@id", idNegocio);
+
+    connection.Open();
+    return Convert.ToInt32(command.ExecuteScalar()) > 0;
+  }
+
   public List<Negocio> ObtenerPorUsuario(int idUsuario)
   {
     var lista = new List<Negocio>();

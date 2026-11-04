@@ -5,6 +5,7 @@ using ReservAr.Models;
 using ReservAr.Models.Repositorios;
 using ReservAr.ViewModels;
 using System.Security.Claims;
+using ReservAr.Helpers;
 
 
 namespace ReservAr.Controllers;
@@ -16,6 +17,7 @@ public class ReservasController : Controller
     private readonly RepositorioReserva _repoReserva;
     private readonly RepositorioHorarioAtencion _repoHorario;
     private readonly RepositorioTarifa _repoTarifa;
+    private const int TamanoPagina = 10;
 
     public ReservasController(
         RepositorioReserva repoReserva,
@@ -242,7 +244,73 @@ public class ReservasController : Controller
         });
     }
 
+    [Authorize(Roles = Roles.Usuario)]
+    [HttpGet]
+    public IActionResult Mias()
+    {
+        return View();
+    }
 
+    [Authorize(Roles = Roles.Usuario)]
+    [HttpGet]
+    public IActionResult ListarMias(int pagina = 1)
+    {
+        if (pagina < 1) pagina = 1;
+
+        var idUsuario = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var ahora = DateTime.Now;
+
+        var total = _repoReserva.ContarDeUsuario(idUsuario);
+        var totalPaginas = (int)Math.Ceiling(total / (double)TamanoPagina);
+
+        var items = _repoReserva.ListarDeUsuario(idUsuario, pagina, TamanoPagina)
+            .Select(r => new
+            {
+                r.IdReserva,
+                Cancha = r.RecursoNombre,
+                Fecha = r.Fecha.ToString("yyyy-MM-dd"),
+                HoraInicio = FormatearHora(r.HoraInicio),
+                HoraFin = FormatearHora(r.HoraFin),
+                Estado = CalcularEstado(r, ahora)
+            });
+
+        return Json(new { items, total, pagina, totalPaginas });
+    }
+
+    [Authorize(Roles = Roles.Usuario)]
+    [HttpGet]
+    public IActionResult InfoMia(int id)
+    {
+        var idUsuario = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        var info = _repoReserva.ObtenerInfoDeUsuario(id, idUsuario);
+        if (info == null)
+            return NotFound();
+
+        return Json(new
+        {
+            info.Complejo,
+            info.Direccion,
+            info.Ciudad,
+            info.DescripcionComplejo,
+            info.Telefono,
+            info.Cancha,
+            info.DescripcionCancha
+        });
+    }
+
+    private static string CalcularEstado(Reserva r, DateTime ahora)
+    {
+        if (r.Estado == EstadoReserva.Cancelada)
+            return "Cancelada";
+
+        return r.Fecha.Date + r.HoraFin <= ahora ? "Finalizada" : "Próximamente";
+    }
+
+    private static string FormatearHora(TimeSpan hora)
+    {
+        return hora.TotalHours >= 24 ? "24:00" : hora.ToString(@"hh\:mm");
+    }
     private decimal? CalcularPrecio(
         TimeSpan inicio,
         TimeSpan fin,

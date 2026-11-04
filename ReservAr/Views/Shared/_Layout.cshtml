@@ -30,12 +30,15 @@
               <li class="nav-item">
                 <a class="nav-link rol-usuario" asp-controller="Solicitudes" asp-action="Index">Crear negocio</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link rol-usuario" asp-controller="Reservas" asp-action="Mias">Mis reservas</a>
+              </li>
             }
             @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.SuperAdmin))
             {
               <li class="nav-item">
                 <a class="nav-link rol-admin" asp-controller="Negocios"
-                  asp-action="Index">@(User.IsInRole(Roles.SuperAdmin) ? "Negocios" : "Mis negocios")</a>
+                   asp-action="Index">@(User.IsInRole(Roles.SuperAdmin) ? "Negocios" : "Mis negocios")</a>
               </li>
             }
             @if (User.IsInRole(Roles.SuperAdmin))

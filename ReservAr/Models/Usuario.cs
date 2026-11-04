@@ -12,4 +12,5 @@ public class Usuario
     public string? Avatar { get; set; }
     public bool Activo { get; set; } = true;
     public DateTime FechaAlta { get; set; }
+    public string RolNombre { get; set; } = "";
 }

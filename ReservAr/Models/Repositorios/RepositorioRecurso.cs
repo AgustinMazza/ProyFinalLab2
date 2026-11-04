@@ -43,11 +43,35 @@ public class RepositorioRecurso
         return lista;
     }
 
+    public List<Recurso> ListarActivosPorNegocio(int idNegocio)
+    {
+        var lista = new List<Recurso>();
 
+        using var connection = new MySqlConnection(_connectionString);
+        var sql = @"SELECT IdRecurso, IdNegocio, Nombre, Descripcion, DuracionMin, Activo
+                    FROM recursos
+                    WHERE IdNegocio = @idNegocio AND Activo = 1
+                    ORDER BY Nombre";
+        using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@idNegocio", idNegocio);
 
+        connection.Open();
+        using var reader = command.ExecuteReader();
 
-
-
+        while (reader.Read())
+        {
+            lista.Add(new Recurso
+            {
+                IdRecurso = reader.GetInt32("IdRecurso"),
+                IdNegocio = reader.GetInt32("IdNegocio"),
+                Nombre = reader.GetString("Nombre"),
+                Descripcion = reader.IsDBNull(reader.GetOrdinal("Descripcion")) ? null : reader.GetString("Descripcion"),
+                DuracionMin = reader.GetInt32("DuracionMin"),
+                Activo = reader.GetBoolean("Activo")
+            });
+        }
+        return lista;
+    }
 
     public List<Recurso> Listar()
     {
