@@ -17,6 +17,7 @@ public class ReservasController : Controller
   private readonly RepositorioHorarioAtencion _repoHorario;
   private readonly RepositorioTarifa _repoTarifa;
   private const int TamanoPagina = 10;
+  public const int MaxDiasAnticipacion = 30;
 
   public ReservasController(
       RepositorioReserva repoReserva,
@@ -98,6 +99,9 @@ public class ReservasController : Controller
     if (fecha.Date < DateTime.Today)
       return BadRequest(new { mensaje = "no podes consultar fechas pasadas" });
 
+    if (fecha.Date > DateTime.Today.AddDays(MaxDiasAnticipacion))
+      return BadRequest(new { mensaje = $"Solo podes consultar hasta {MaxDiasAnticipacion} dias adelante" });
+
     var recurso = _repoRecurso.ObtenerPorId(id);
 
     if (recurso == null || !recurso.Activo)
@@ -153,7 +157,7 @@ public class ReservasController : Controller
 
   }
 
-  [Authorize]
+  [Authorize(Roles = Roles.Usuario + "," + Roles.Admin)]
   [HttpPost]
   [ValidateAntiForgeryToken]
   public IActionResult Confirmar(
@@ -168,6 +172,9 @@ public class ReservasController : Controller
 
     if (fecha.Date < DateTime.Today)
       return BadRequest(new { mensaje = "No podes reservar fechas pasadas" });
+
+    if (fecha.Date > DateTime.Today.AddDays(MaxDiasAnticipacion))
+      return BadRequest(new { mensaje = $"Solo podes reservar hasta {MaxDiasAnticipacion} dias adelante" });
 
     var recurso = _repoRecurso.ObtenerPorId(idRecurso);
 
@@ -336,7 +343,7 @@ public class ReservasController : Controller
     return View(ticket);
   }
 
-  private static string CalcularEstado(Reserva r, DateTime ahora)
+  public static string CalcularEstado(Reserva r, DateTime ahora)
   {
     if (r.Estado == EstadoReserva.Cancelada)
       return "Cancelada";
@@ -349,12 +356,12 @@ public class ReservasController : Controller
     return yaPaso ? "Finalizada" : "Confirmada";
   }
 
-  private static bool PuedeCancelar(Reserva r, DateTime ahora)
+  public static bool PuedeCancelar(Reserva r, DateTime ahora)
   {
     var activa = r.Estado == EstadoReserva.Pendiente || r.Estado == EstadoReserva.Confirmada;
     return activa && r.Fecha.Date + r.HoraInicio > ahora;
   }
-  private static string FormatearHora(TimeSpan hora)
+  public static string FormatearHora(TimeSpan hora)
   {
     return hora.TotalHours >= 24 ? "24:00" : hora.ToString(@"hh\:mm");
   }

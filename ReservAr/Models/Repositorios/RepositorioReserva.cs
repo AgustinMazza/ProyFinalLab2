@@ -197,6 +197,78 @@ public class RepositorioReserva
     return null;
   }
 
+  private const string FiltroGestion = @"
+    (@idDuenio IS NULL OR n.IdUsuario = @idDuenio)
+    AND (@estado IS NULL OR r.Estado = @estado)
+    AND (@buscar = '' OR n.Nombre LIKE @like OR rc.Nombre LIKE @like
+         OR CONCAT(u.Nombre, ' ', u.Apellido) LIKE @like)";
+
+  private static void AgregarFiltrosGestion(MySqlCommand command, string buscar, int? idDuenio, EstadoReserva? estado)
+  {
+    command.Parameters.AddWithValue("@idDuenio", (object?)idDuenio ?? DBNull.Value);
+    command.Parameters.AddWithValue("@estado", estado.HasValue ? (object)(byte)estado.Value : DBNull.Value);
+    command.Parameters.AddWithValue("@buscar", buscar);
+    command.Parameters.AddWithValue("@like", "%" + buscar + "%");
+  }
+
+  public int ContarDeNegocios(string buscar, int? idDuenio, EstadoReserva? estado)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = @"SELECT COUNT(*)
+              FROM reservas r
+              INNER JOIN negocios n  ON n.IdNegocio  = r.IdNegocio
+              INNER JOIN recursos rc ON rc.IdRecurso = r.IdRecurso
+              INNER JOIN usuarios u  ON u.IdUsuario  = r.IdUsuario
+              WHERE " + FiltroGestion;
+    using var command = new MySqlCommand(sql, connection);
+    AgregarFiltrosGestion(command, buscar, idDuenio, estado);
+
+    connection.Open();
+    return Convert.ToInt32(command.ExecuteScalar());
+  }
+
+  public List<ReservaGestion> ListarDeNegocios(string buscar, int? idDuenio, EstadoReserva? estado, int pagina, int tamano)
+  {
+    var lista = new List<ReservaGestion>();
+
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = @"SELECT r.IdReserva, r.Fecha, r.HoraInicio, r.HoraFin, r.Estado, r.Precio,
+                     rc.Nombre AS RecursoNombre, n.Nombre AS NegocioNombre,
+                     CONCAT(u.Nombre, ' ', u.Apellido) AS ClienteNombre,
+                     u.Telefono AS ClienteTelefono
+              FROM reservas r
+              INNER JOIN negocios n  ON n.IdNegocio  = r.IdNegocio
+              INNER JOIN recursos rc ON rc.IdRecurso = r.IdRecurso
+              INNER JOIN usuarios u  ON u.IdUsuario  = r.IdUsuario
+              WHERE " + FiltroGestion + @"
+              ORDER BY r.Fecha DESC, r.HoraInicio DESC
+              LIMIT @tamano OFFSET @salto";
+    using var command = new MySqlCommand(sql, connection);
+    AgregarFiltrosGestion(command, buscar, idDuenio, estado);
+    command.Parameters.AddWithValue("@tamano", tamano);
+    command.Parameters.AddWithValue("@salto", (pagina - 1) * tamano);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+    while (reader.Read())
+    {
+      lista.Add(new ReservaGestion
+      {
+        IdReserva = reader.GetInt32("IdReserva"),
+        Fecha = reader.GetDateTime("Fecha"),
+        HoraInicio = reader.GetTimeSpan("HoraInicio"),
+        HoraFin = reader.GetTimeSpan("HoraFin"),
+        Estado = (EstadoReserva)reader.GetInt32("Estado"),
+        Precio = reader.GetDecimal("Precio"),
+        RecursoNombre = reader.GetString("RecursoNombre"),
+        NegocioNombre = reader.GetString("NegocioNombre"),
+        ClienteNombre = reader.GetString("ClienteNombre"),
+        ClienteTelefono = reader.IsDBNull(reader.GetOrdinal("ClienteTelefono")) ? null : reader.GetString("ClienteTelefono")
+      });
+    }
+    return lista;
+  }
+
   public int Crear(Reserva reserva)
   {
     using var connection = new MySqlConnection(_connectionString);

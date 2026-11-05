@@ -45,6 +45,12 @@
                    asp-action="Index">@(User.IsInRole(Roles.SuperAdmin) ? "Negocios" : "Mis negocios")</a>
               </li>
             }
+            @if (User.IsInRole(Roles.Admin))
+            {
+              <li class="nav-item">
+                <a class="nav-link rol-admin" asp-controller="GestionReservas" asp-action="Index">Reservas recibidas</a>
+              </li>
+            }
             @if (User.IsInRole(Roles.SuperAdmin))
             {
               <li class="nav-item">

@@ -180,7 +180,7 @@
             Seleccioná una fecha
           </label>
 
-          <input type="date" id="fechaReserva" class="form-control" v-model="fecha" :min="hoy" />
+          <input type="date" id="fechaReserva" class="form-control" v-model="fecha" :min="hoy" :max="maxFecha" />
         </div>
 
         <div v-if="cargando" class="alert alert-info">
@@ -238,9 +238,16 @@
             </p>
           </div>
         </div>
-        <button type="button" class="btn btn-success mt-3" v-on:click="confirmarReserva" :disabled="confirmando">
-          {{ confirmando ? 'Confirmando...' : 'Confirmar reserva' }}
-        </button>
+        @if (User.IsInRole(Roles.SuperAdmin))
+        {
+          <div class="alert alert-info mt-3">Como SuperAdmin no podés hacer reservas.</div>
+        }
+        else
+        {
+          <button type="button" class="btn btn-success mt-3" v-on:click="confirmarReserva" :disabled="confirmando">
+            {{ confirmando ? 'Confirmando...' : 'Confirmar reserva' }}
+          </button>
+        }
         <div v-if="mensaje" class="alert alert-success mt-3">
           {{ mensaje }}
         </div>
