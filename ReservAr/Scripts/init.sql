@@ -155,8 +155,8 @@ INSERT INTO roles (Nombre) VALUES ('Usuario'), ('Admin'), ('SuperAdmin');
 INSERT INTO categorias (Nombre, Descripcion) VALUES
 ('Canchas de futbol', 'Alquiler de canchas de futbol por hora');
 
--- PasswordHash es un valor de relleno. Cuando este hecho el login,
--- se reemplaza por los hashes reales generados por la aplicacion
+-- Contraseñas de prueba (hasheadas con PBKDF2, mismo formato que HashHelper):
+-- superadmin: Super123!  |  marta (Admin): Admin123!  |  juan y sofia (Usuario): Usuario123!
 INSERT INTO usuarios (IdRol, Nombre, Apellido, Email, PasswordHash, Telefono) VALUES
 (3, 'Super', 'Admin',  'superadmin@reservar.com', '600000.QonjeZg1t97+2sobE/XI/Q==.qnecRmqs4PEh7nWemaMObxyQtO4SzfaYF7g0zBx1ick=', NULL),
 (2, 'Marta', 'Gomez',  'marta@reservar.com',      '600000.bVm0kDiXaJWwqkCN6B7Lqw==.SAkXCq2rZ0ULi4wM7I9Titnit12eaF9m2D49+1Her8E=', '3511112222'),

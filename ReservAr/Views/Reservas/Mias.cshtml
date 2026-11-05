@@ -1,87 +1,92 @@
 @{
-    ViewData["Title"] = "Mis reservas";
+  ViewData["Title"] = "Mis reservas";
 }
-
+@Html.AntiForgeryToken()
 <style>
-    [v-cloak] {
-        display: none;
-    }
+  [v-cloak] {
+    display: none;
+  }
 </style>
 
 <div id="app" v-cloak>
-    <h2 class="mb-4">Mis reservas</h2>
+  <h2 class="mb-4">Mis reservas</h2>
 
-    <div v-if="error" class="alert alert-danger">{{ error }}</div>
+  <div v-if="error" class="alert alert-danger">{{ error }}</div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Cancha</th>
-                <th>Día</th>
-                <th>Horario</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="r in reservas" :key="r.idReserva" :class="{ 'table-secondary': r.estado !== 'Próximamente' }">
-                <td>
-                    <button type="button" class="btn btn-link p-0 align-baseline" v-on:click="verInfo(r)">{{ r.cancha
-                        }}</button>
-                    </td>
-                    <td>{{ formatearFecha(r.fecha) }}</td>
-                    <td>{{ r.horaInicio }} - {{ r.horaFin }}</td>
-                    <td>
-                        <span class="badge" :class="claseEstado(r.estado)">{{ r.estado }}</span>
-                    </td>
-                </tr>
-                <tr v-if="reservas.length === 0 && !error">
-                    <td colspan="4" class="text-center text-muted">Todavía no tenés reservas</td>
-                </tr>
-            </tbody>
-        </table>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Lugar</th>
+        <th>Día</th>
+        <th>Horario</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="r in reservas" :key="r.idReserva"
+          :class="{ 'table-secondary': ['Finalizada', 'Vencida', 'Cancelada'].includes(r.estado) }">
+        <td>
+          <button type="button" class="btn btn-link p-0 align-baseline" v-on:click="verInfo(r)">{{ r.lugar }}</button>
+        </td>
+        <td>{{ formatearFecha(r.fecha) }}</td>
+        <td>{{ r.horaInicio }} - {{ r.horaFin }}</td>
+        <td><span class="badge" :class="claseEstado(r.estado)">{{ r.estado }}</span></td>
+        <td class="text-end">
+          <a v-if="r.puedeTicket" :href="'/Reservas/Ticket/' + r.idReserva"
+            class="btn btn-sm btn-outline-primary">Ticket</a>
+          <button v-if="r.puedeCancelar" type="button" class="btn btn-sm btn-outline-danger"
+                  v-on:click="cancelar(r)">Cancelar</button>
+        </td>
+      </tr>
+      <tr v-if="reservas.length === 0 && !error">
+        <td colspan="5" class="text-center text-muted">Todavía no tenés reservas</td>
+      </tr>
+    </tbody>
+  </table>
 
-        <nav v-if="totalPaginas > 1">
-            <ul class="pagination">
-                <li class="page-item" :class="{ disabled: pagina === 1 }">
-                    <button class="page-link" v-on:click="irAPagina(pagina - 1)">Anterior</button>
-                </li>
-                <li v-for="n in totalPaginas" :key="n" class="page-item" :class="{ active: n === pagina }">
-                    <button class="page-link" v-on:click="irAPagina(n)">{{ n }}</button>
-                </li>
-                <li class="page-item" :class="{ disabled: pagina === totalPaginas }">
-                    <button class="page-link" v-on:click="irAPagina(pagina + 1)">Siguiente</button>
-                </li>
-            </ul>
-        </nav>
+  <nav v-if="totalPaginas > 1">
+    <ul class="pagination">
+      <li class="page-item" :class="{ disabled: pagina === 1 }">
+        <button class="page-link" v-on:click="irAPagina(pagina - 1)">Anterior</button>
+      </li>
+      <li v-for="n in totalPaginas" :key="n" class="page-item" :class="{ active: n === pagina }">
+        <button class="page-link" v-on:click="irAPagina(n)">{{ n }}</button>
+      </li>
+      <li class="page-item" :class="{ disabled: pagina === totalPaginas }">
+        <button class="page-link" v-on:click="irAPagina(pagina + 1)">Siguiente</button>
+      </li>
+    </ul>
+  </nav>
 
         
-        <div v-if="info" class="modal d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"
-             v-on:click.self="cerrarInfo">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ info.complejo }}</h5>
-                        <button type="button" class="btn-close" aria-label="Cerrar" v-on:click="cerrarInfo"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p class="mb-1">{{ info.direccion }}, {{ info.ciudad }}</p>
-                        <p v-if="info.descripcionComplejo" class="mb-1">{{ info.descripcionComplejo }}</p>
-                        <p v-if="info.telefono" class="mb-3">Teléfono: {{ info.telefono }}</p>
-                        <hr />
-                        <p class="mb-0">
-                            <strong>{{ info.cancha }}</strong><span v-if="info.descripcionCancha"> - {{
-                            info.descripcionCancha }}</span>
-                        </p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" v-on:click="cerrarInfo">Cerrar</button>
-                    </div>
-                </div>
-            </div>
+  <div v-if="info" class="modal d-block" tabindex="-1" style="background-color: rgba(0, 0, 0, 0.5);"
+       v-on:click.self="cerrarInfo">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ info.complejo }}</h5>
+          <button type="button" class="btn-close" aria-label="Cerrar" v-on:click="cerrarInfo"></button>
         </div>
+        <div class="modal-body">
+          <p class="mb-1">{{ info.direccion }}, {{ info.ciudad }}</p>
+          <p v-if="info.descripcionComplejo" class="mb-1">{{ info.descripcionComplejo }}</p>
+          <p v-if="info.telefono" class="mb-3">Teléfono: {{ info.telefono }}</p>
+          <hr />
+          <p class="mb-0">
+            <strong>{{ info.cancha }}</strong><span v-if="info.descripcionCancha"> - {{
+            info.descripcionCancha }}</span>
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" v-on:click="cerrarInfo">Cerrar</button>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
 
-    @section Scripts {
-        <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
-        <script src="~/js/misreservas.js" asp-append-version="true"></script>
-    }
+@section Scripts {
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+  <script src="~/js/misreservas.js" asp-append-version="true"></script>
+}

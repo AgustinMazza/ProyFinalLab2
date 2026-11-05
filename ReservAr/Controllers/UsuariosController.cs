@@ -30,7 +30,7 @@ public class UsuariosController : Controller
   [HttpGet]
   public IActionResult Listar(string buscar = "", int pagina = 1)
   {
-    buscar = buscar.Trim();
+    buscar = (buscar ?? "").Trim();
     if (pagina < 1) pagina = 1;
 
     var total = _repoUsuario.Contar(buscar);

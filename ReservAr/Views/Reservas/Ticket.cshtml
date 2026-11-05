@@ -1,0 +1,42 @@
+@model ReservAr.Models.ReservaTicket
+
+@{
+  ViewData["Title"] = "Ticket de reserva";
+  var cultura = new System.Globalization.CultureInfo("es-AR");
+  var fechaTexto = Model.Fecha.ToString("dddd d 'de' MMMM 'de' yyyy", cultura);
+  var precioTexto = Model.Precio.ToString("C", cultura);
+  string Hora(TimeSpan h) => h.TotalHours >= 24 ? "24:00" : h.ToString(@"hh\:mm");
+}
+
+<div class="mx-auto my-4" style="max-width: 420px;">
+  <div class="card shadow-sm">
+    <div class="card-header text-center">
+      <h4 class="mb-0">ReservAr</h4>
+      <small class="text-muted">Reserva Nº @Model.IdReserva.ToString("D6")</small>
+    </div>
+    <div class="card-body">
+      <table class="table table-sm mb-0">
+        <tbody>
+          <tr><th>Lugar</th><td>@Model.Complejo - @Model.Cancha</td></tr>
+          <tr><th>Dirección</th><td>@Model.Direccion, @Model.Ciudad</td></tr>
+          @if (!string.IsNullOrWhiteSpace(Model.Telefono))
+          {
+            <tr><th>Teléfono</th><td>@Model.Telefono</td></tr>
+          }
+          <tr><th>Fecha</th><td>@fechaTexto</td></tr>
+          <tr><th>Horario</th><td>@Hora(Model.HoraInicio) a @Hora(Model.HoraFin)</td></tr>
+          <tr><th>A nombre de</th><td>@Model.Cliente</td></tr>
+          <tr><th>Total</th><td><strong>@precioTexto</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer text-center text-muted small">
+      Compartí estos datos con tus amigos. ¡Que gane el mejor!
+    </div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-center mt-3 no-imprimir">
+    <button type="button" class="btn btn-primary" onclick="window.print()">Imprimir</button>
+    <a asp-action="Mias" class="btn btn-outline-secondary">Volver a mis reservas</a>
+  </div>
+</div>

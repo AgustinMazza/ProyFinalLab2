@@ -62,3 +62,11 @@ body {
   --bs-btn-active-bg: #59359a;
   --bs-btn-active-border-color: #59359a;
 }
+
+@media print {
+  header,
+  footer,
+  .no-imprimir {
+    display: none !important;
+  }
+}

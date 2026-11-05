@@ -41,7 +41,7 @@ public class NegociosController : Controller
   [HttpGet]
   public IActionResult Listar(string buscar = "", int pagina = 1)
   {
-    buscar = buscar.Trim();
+    buscar = (buscar ?? "").Trim();
     if (pagina < 1) pagina = 1;
 
     var idDuenio = FiltroDuenio();
@@ -186,7 +186,8 @@ public class NegociosController : Controller
     if (!PuedeAdministrar(negocio))
       return Prohibido();
 
-    _repoNegocio.CambiarActivo(id, activo);
+    if (_repoNegocio.CambiarActivo(id, activo) == 0)
+      return Rechazar("El negocio no está aprobado");
     return Ok(new { ok = true });
   }
 

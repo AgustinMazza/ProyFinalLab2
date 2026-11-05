@@ -270,11 +270,13 @@ public class ReservasController : Controller
         .Select(r => new
         {
           r.IdReserva,
-          Cancha = r.RecursoNombre,
+          Lugar = $"{r.NegocioNombre} - {r.RecursoNombre}",
           Fecha = r.Fecha.ToString("yyyy-MM-dd"),
           HoraInicio = FormatearHora(r.HoraInicio),
           HoraFin = FormatearHora(r.HoraFin),
-          Estado = CalcularEstado(r, ahora)
+          Estado = CalcularEstado(r, ahora),
+          PuedeCancelar = PuedeCancelar(r, ahora),
+          PuedeTicket = r.Estado == EstadoReserva.Confirmada || r.Estado == EstadoReserva.Completada
         });
 
     return Json(new { items, total, pagina, totalPaginas });
@@ -302,14 +304,56 @@ public class ReservasController : Controller
     });
   }
 
+  [Authorize(Roles = Roles.Usuario)]
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public IActionResult Cancelar(int id)
+  {
+    var idUsuario = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    var reserva = _repoReserva.ObtenerPorId(id);
+    if (reserva == null || reserva.IdUsuario != idUsuario)
+      return NotFound(new { mensaje = "La reserva no existe" });
+
+    if (!PuedeCancelar(reserva, DateTime.Now))
+      return BadRequest(new { mensaje = "Esta reserva ya no se puede cancelar" });
+
+    _repoReserva.CambiarEstado(id, EstadoReserva.Cancelada);
+    return Ok(new { mensaje = "Reserva cancelada" });
+  }
+
+  [Authorize(Roles = Roles.Usuario)]
+  [HttpGet]
+  public IActionResult Ticket(int id)
+  {
+    var idUsuario = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+    var ticket = _repoReserva.ObtenerTicketDeUsuario(id, idUsuario);
+    if (ticket == null ||
+        (ticket.Estado != EstadoReserva.Confirmada && ticket.Estado != EstadoReserva.Completada))
+      return NotFound();
+
+    return View(ticket);
+  }
+
   private static string CalcularEstado(Reserva r, DateTime ahora)
   {
     if (r.Estado == EstadoReserva.Cancelada)
       return "Cancelada";
 
-    return r.Fecha.Date + r.HoraFin <= ahora ? "Finalizada" : "Próximamente";
+    var yaPaso = r.Fecha.Date + r.HoraFin <= ahora;
+
+    if (r.Estado == EstadoReserva.Pendiente)
+      return yaPaso ? "Vencida" : "Pendiente";
+
+    return yaPaso ? "Finalizada" : "Confirmada";
   }
 
+  private static bool PuedeCancelar(Reserva r, DateTime ahora)
+  {
+    var activa = r.Estado == EstadoReserva.Pendiente || r.Estado == EstadoReserva.Confirmada;
+    return activa && r.Fecha.Date + r.HoraInicio > ahora;
+  }
   private static string FormatearHora(TimeSpan hora)
   {
     return hora.TotalHours >= 24 ? "24:00" : hora.ToString(@"hh\:mm");

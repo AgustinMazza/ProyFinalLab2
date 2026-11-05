@@ -47,9 +47,9 @@ public class RepositorioNegocio
   {
     using var connection = new MySqlConnection(_connectionString);
     var sql = @"SELECT COUNT(*) FROM negocios n
-                WHERE n.Activo = 1
-                  AND (@idCategoria = 0 OR n.IdCategoria = @idCategoria)
-                  AND (n.Nombre LIKE @patron OR n.Ciudad LIKE @patron OR n.Direccion LIKE @patron)";
+                WHERE n.Activo = 1 AND n.Estado = 1
+                AND (@idCategoria = 0 OR n.IdCategoria = @idCategoria)
+                AND (n.Nombre LIKE @patron OR n.Ciudad LIKE @patron OR n.Direccion LIKE @patron)";
     using var command = new MySqlCommand(sql, connection);
     command.Parameters.AddWithValue("@idCategoria", idCategoria);
     command.Parameters.AddWithValue("@patron", "%" + buscar + "%");
@@ -69,7 +69,7 @@ public class RepositorioNegocio
                 WHERE r.IdNegocio = n.IdNegocio AND r.Activo = 1) AS CantidadRecursos
                 FROM negocios n
                 INNER JOIN categorias c ON c.IdCategoria = n.IdCategoria
-                WHERE n.Activo = 1
+                WHERE n.Activo = 1 AND n.Estado = 1
                 AND (@idCategoria = 0 OR n.IdCategoria = @idCategoria)
                 AND (n.Nombre LIKE @patron OR n.Ciudad LIKE @patron OR n.Direccion LIKE @patron)
                 ORDER BY n.Nombre
@@ -106,7 +106,7 @@ public class RepositorioNegocio
   public Negocio? ObtenerPorId(int id)
   {
     using var connection = new MySqlConnection(_connectionString);
-    var sql = "SELECT IdNegocio, IdCategoria, IdUsuario, Nombre, Descripcion, Direccion, Ciudad, Telefono, LogoUrl, Activo FROM negocios WHERE IdNegocio = @id ORDER BY Nombre";
+    var sql = "SELECT IdNegocio, IdCategoria, IdUsuario, Nombre, Descripcion, Direccion, Ciudad, Telefono, LogoUrl, Activo, Estado FROM negocios WHERE IdNegocio = @id";
     using var command = new MySqlCommand(sql, connection);
     command.Parameters.AddWithValue("@id", id);
 
@@ -127,6 +127,7 @@ public class RepositorioNegocio
         Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
         LogoUrl = reader.IsDBNull(reader.GetOrdinal("LogoUrl")) ? null : reader.GetString("LogoUrl"),
         Activo = reader.GetBoolean("Activo"),
+        Estado = (EstadoNegocio)reader.GetInt32("Estado"),
       };
     }
 
@@ -280,10 +281,11 @@ public class RepositorioNegocio
   public int CambiarActivo(int id, bool activo)
   {
     using var connection = new MySqlConnection(_connectionString);
-    var sql = "UPDATE negocios SET Activo = @activo WHERE IdNegocio = @id";
+    var sql = "UPDATE negocios SET Activo = @activo WHERE IdNegocio = @id AND Estado = @aprobado";
     using var command = new MySqlCommand(sql, connection);
     command.Parameters.AddWithValue("@id", id);
     command.Parameters.AddWithValue("@activo", activo);
+    command.Parameters.AddWithValue("@aprobado", (byte)EstadoNegocio.Aprobado);
 
     connection.Open();
 

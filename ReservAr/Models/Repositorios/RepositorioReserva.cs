@@ -96,9 +96,10 @@ public class RepositorioReserva
 
     using var connection = new MySqlConnection(_connectionString);
     var sql = @"SELECT r.IdReserva, r.Fecha, r.HoraInicio, r.HoraFin, r.Estado,
-                       rc.Nombre AS RecursoNombre
+                      rc.Nombre AS RecursoNombre, n.Nombre AS NegocioNombre
                 FROM reservas r
                 INNER JOIN recursos rc ON rc.IdRecurso = r.IdRecurso
+                INNER JOIN negocios n ON n.IdNegocio = r.IdNegocio
                 WHERE r.IdUsuario = @idUsuario
                 ORDER BY r.Fecha DESC, r.HoraInicio DESC
                 LIMIT @tamano OFFSET @salto";
@@ -118,7 +119,8 @@ public class RepositorioReserva
         HoraInicio = reader.GetTimeSpan("HoraInicio"),
         HoraFin = reader.GetTimeSpan("HoraFin"),
         Estado = (EstadoReserva)reader.GetInt32("Estado"),
-        RecursoNombre = reader.GetString("RecursoNombre")
+        RecursoNombre = reader.GetString("RecursoNombre"),
+        NegocioNombre = reader.GetString("NegocioNombre")
       });
     }
 
@@ -151,6 +153,45 @@ public class RepositorioReserva
         Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
         Cancha = reader.GetString("Cancha"),
         DescripcionCancha = reader.IsDBNull(reader.GetOrdinal("DescripcionCancha")) ? null : reader.GetString("DescripcionCancha")
+      };
+    }
+    return null;
+  }
+
+  public ReservaTicket? ObtenerTicketDeUsuario(int idReserva, int idUsuario)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = @"SELECT r.IdReserva, r.Fecha, r.HoraInicio, r.HoraFin, r.Estado, r.Precio,
+                  n.Nombre AS Complejo, n.Direccion, n.Ciudad, n.Telefono,
+                  rc.Nombre AS Cancha,
+                  CONCAT(u.Nombre, ' ', u.Apellido) AS Cliente
+                FROM reservas r
+                INNER JOIN negocios n  ON n.IdNegocio  = r.IdNegocio
+                INNER JOIN recursos rc ON rc.IdRecurso = r.IdRecurso
+                INNER JOIN usuarios u  ON u.IdUsuario  = r.IdUsuario
+                WHERE r.IdReserva = @idReserva AND r.IdUsuario = @idUsuario";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@idReserva", idReserva);
+    command.Parameters.AddWithValue("@idUsuario", idUsuario);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+    if (reader.Read())
+    {
+      return new ReservaTicket
+      {
+        IdReserva = reader.GetInt32("IdReserva"),
+        Cliente = reader.GetString("Cliente"),
+        Complejo = reader.GetString("Complejo"),
+        Direccion = reader.GetString("Direccion"),
+        Ciudad = reader.GetString("Ciudad"),
+        Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
+        Cancha = reader.GetString("Cancha"),
+        Fecha = reader.GetDateTime("Fecha"),
+        HoraInicio = reader.GetTimeSpan("HoraInicio"),
+        HoraFin = reader.GetTimeSpan("HoraFin"),
+        Precio = reader.GetDecimal("Precio"),
+        Estado = (EstadoReserva)reader.GetInt32("Estado")
       };
     }
     return null;
