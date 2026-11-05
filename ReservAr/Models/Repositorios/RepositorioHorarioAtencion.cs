@@ -37,7 +37,7 @@ public class RepositorioHorarioAtencion
         return lista;
     }
 
-        public List<HorarioAtencion> ListarPorRecursoYDia(int idRecurso, int diaSemana)
+    public List<HorarioAtencion> ListarPorRecursoYDia(int idRecurso, int diaSemana)
     {
         var lista = new List<HorarioAtencion>();
 
@@ -67,7 +67,30 @@ public class RepositorioHorarioAtencion
         return lista;
     }
 
+    public HorarioAtencion? ObtenerPorId(int id)
+    {
+        using var connection = new MySqlConnection(_connectionString);
+        var sql = "SELECT IdHorarioAtencion, IdRecurso, DiaSemana, HoraDesde, HoraHasta FROM horarios_atencion WHERE IdHorarioAtencion = @id";
+        using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@id", id);
 
+        connection.Open();
+        using var reader = command.ExecuteReader();
+
+        if (reader.Read())
+        {
+            return new HorarioAtencion
+            {
+                IdHorarioAtencion = reader.GetInt32("IdHorarioAtencion"),
+                IdRecurso = reader.GetInt32("IdRecurso"),
+                DiaSemana = reader.GetInt32("DiaSemana"),
+                HoraDesde = reader.GetTimeSpan("HoraDesde"),
+                HoraHasta = reader.GetTimeSpan("HoraHasta"),
+            };
+        }
+
+        return null;
+    }
     public int Crear(HorarioAtencion horarioAtencion)
     {
         using var connection = new MySqlConnection(_connectionString);
