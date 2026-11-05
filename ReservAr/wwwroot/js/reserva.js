@@ -16,12 +16,21 @@ createApp({
       String(ahora.getDate()).padStart(2, "0"),
     ].join("-");
 
+    const limite = new Date(ahora);
+    limite.setDate(limite.getDate() + 30);
+    const maxFecha = [
+      limite.getFullYear(),
+      String(limite.getMonth() + 1).padStart(2, "0"),
+      String(limite.getDate()).padStart(2, "0"),
+    ].join("-");
+
     return {
       confirmando: false,
       mensaje: "",
       errorConfirmacion: "",
       idRecurso: idRecurso,
       hoy: hoy,
+      maxFecha: maxFecha,
       fecha: hoy,
       turnos: [],
       turnoSeleccionado: null,

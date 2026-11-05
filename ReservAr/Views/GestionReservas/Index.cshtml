@@ -1,0 +1,84 @@
+@{
+  ViewData["Title"] = "Reservas recibidas";
+}
+
+<style>
+  [v-cloak] {
+    display: none;
+  }
+</style>
+
+@Html.AntiForgeryToken()
+
+<div id="app" v-cloak>
+  <h2 class="mb-4">@ViewData["Title"]</h2>
+
+  <div class="alert alert-danger" v-if="error">{{ error }}</div>
+
+  <div class="d-flex gap-2 mb-3">
+    <input type="text" class="form-control w-50" placeholder="Buscar por cliente, negocio o cancha" v-model="buscar"
+           v-on:input="buscarConPausa" />
+    <select class="form-select w-auto" v-model="estado" v-on:change="cambiarFiltro">
+      <option value="0">Pendientes</option>
+      <option value="1">Confirmadas</option>
+      <option value="2">Canceladas</option>
+      <option value="-1">Todas</option>
+    </select>
+  </div>
+
+  <table class="table align-middle">
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Lugar</th>
+        <th>Día</th>
+        <th>Horario</th>
+        <th>Precio</th>
+        <th>Estado</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="r in reservas" :key="r.idReserva"
+          :class="{ 'table-secondary': ['Finalizada', 'Vencida', 'Cancelada'].includes(r.estado) }">
+        <td>
+          {{ r.cliente }}
+          <div class="small text-muted" v-if="r.telefono">{{ r.telefono }}</div>
+        </td>
+        <td>{{ r.lugar }}</td>
+        <td>{{ formatearFecha(r.fecha) }}</td>
+        <td>{{ r.horaInicio }} - {{ r.horaFin }}</td>
+        <td>{{ formatearPrecio(r.precio) }}</td>
+        <td><span class="badge" :class="claseEstado(r.estado)">{{ r.estado }}</span></td>
+        <td class="text-end">
+          <button v-if="r.puedeConfirmar" type="button" class="btn btn-sm btn-success"
+                  v-on:click="confirmar(r)">Confirmar</button>
+          <button v-if="r.puedeCancelar" type="button" class="btn btn-sm btn-outline-danger" v-on:click="cancelar(r)">{{
+            r.estado === 'Pendiente' ? 'Rechazar' : 'Cancelar' }}</button>
+          </td>
+        </tr>
+        <tr v-if="reservas.length === 0">
+          <td colspan="7" class="text-center text-muted">No hay reservas para mostrar</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <nav v-if="totalPaginas > 1">
+      <ul class="pagination">
+        <li class="page-item" :class="{ disabled: pagina === 1 }">
+          <button class="page-link" v-on:click="irAPagina(pagina - 1)">Anterior</button>
+        </li>
+        <li v-for="n in totalPaginas" :key="n" class="page-item" :class="{ active: n === pagina }">
+          <button class="page-link" v-on:click="irAPagina(n)">{{ n }}</button>
+        </li>
+        <li class="page-item" :class="{ disabled: pagina === totalPaginas }">
+          <button class="page-link" v-on:click="irAPagina(pagina + 1)">Siguiente</button>
+        </li>
+      </ul>
+    </nav>
+  </div>
+
+  @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script>
+    <script src="~/js/gestionreservas.js" asp-append-version="true"></script>
+  }
