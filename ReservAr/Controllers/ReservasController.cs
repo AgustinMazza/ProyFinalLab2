@@ -247,14 +247,14 @@ public class ReservasController : Controller
     });
   }
 
-  [Authorize(Roles = Roles.Usuario)]
+  [Authorize(Roles = Roles.Usuario + "," + Roles.Admin)]
   [HttpGet]
   public IActionResult Mias()
   {
     return View();
   }
 
-  [Authorize(Roles = Roles.Usuario)]
+  [Authorize(Roles = Roles.Usuario + "," + Roles.Admin)]
   [HttpGet]
   public IActionResult ListarMias(int pagina = 1)
   {
@@ -282,7 +282,7 @@ public class ReservasController : Controller
     return Json(new { items, total, pagina, totalPaginas });
   }
 
-  [Authorize(Roles = Roles.Usuario)]
+  [Authorize(Roles = Roles.Usuario + "," + Roles.Admin)]
   [HttpGet]
   public IActionResult InfoMia(int id)
   {
@@ -304,7 +304,7 @@ public class ReservasController : Controller
     });
   }
 
-  [Authorize(Roles = Roles.Usuario)]
+  [Authorize(Roles = Roles.Usuario + "," + Roles.Admin)]
   [HttpPost]
   [ValidateAntiForgeryToken]
   public IActionResult Cancelar(int id)
@@ -322,7 +322,7 @@ public class ReservasController : Controller
     return Ok(new { mensaje = "Reserva cancelada" });
   }
 
-  [Authorize(Roles = Roles.Usuario)]
+  [Authorize(Roles = Roles.Usuario + "," + Roles.Admin)]
   [HttpGet]
   public IActionResult Ticket(int id)
   {

@@ -30,8 +30,12 @@
               <li class="nav-item">
                 <a class="nav-link rol-usuario" asp-controller="Solicitudes" asp-action="Index">Crear negocio</a>
               </li>
+            }
+            @if (User.IsInRole(Roles.Usuario) || User.IsInRole(Roles.Admin))
+            {
               <li class="nav-item">
-                <a class="nav-link rol-usuario" asp-controller="Reservas" asp-action="Mias">Mis reservas</a>
+                <a class="nav-link @(User.IsInRole(Roles.Admin) ? "rol-admin" : "rol-usuario")" asp-controller="Reservas"
+                   asp-action="Mias">Mis reservas</a>
               </li>
             }
             @if (User.IsInRole(Roles.Admin) || User.IsInRole(Roles.SuperAdmin))
