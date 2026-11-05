@@ -39,7 +39,8 @@ public class CatalogoController : Controller
       n.LogoUrl,
       Categoria = n.CategoriaNombre,
       n.CategoriaIcono,
-      n.CantidadRecursos
+      n.CantidadRecursos,
+      n.Imagenes
     });
 
     return Json(new { items, total, pagina, totalPaginas });

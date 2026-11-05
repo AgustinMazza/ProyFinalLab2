@@ -55,6 +55,9 @@ public class ReservasController : Controller
       Recursos = recursos
     };
 
+
+   ViewBag.Imagenes = _repoNegocio.ListarImagenes(id);
+   
     return View(modelo);
 
 

@@ -35,10 +35,19 @@
   <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4" :class="{ 'opacity-50': cargando }">
     <div class="col" v-for="n in negocios" :key="n.idNegocio">
       <div class="card h-100 shadow-sm">
-        <img v-if="n.logoUrl" :src="n.logoUrl" class="card-img-top" alt="" style="height: 160px; object-fit: cover" />
-        <div v-else class="bg-light d-flex align-items-center justify-content-center text-muted display-4"
-             style="height: 160px">
-          {{ n.nombre.charAt(0) }}
+        <div class="position-relative">
+          <img v-if="imagenActual(n)" :src="imagenActual(n)" class="card-img-top" alt=""
+               style="height: 160px; object-fit: cover" />
+          <div v-else class="bg-light d-flex align-items-center justify-content-center text-muted display-4"
+               style="height: 160px">
+            {{ n.nombre.charAt(0) }}
+          </div>
+
+          <div v-if="n.imagenes && n.imagenes.length > 1"
+               class="position-absolute bottom-0 start-50 translate-middle-x mb-2 d-flex gap-1">
+            <span v-for="(img, i) in n.imagenes" :key="i" class="rounded-circle" style="width:8px; height:8px;"
+                  :class="i === tick % n.imagenes.length ? 'bg-white' : 'bg-white bg-opacity-50'"></span>
+          </div>
         </div>
         <div class="card-body d-flex flex-column">
           <span class="badge bg-primary align-self-start mb-2">{{ n.categoria }}</span>
