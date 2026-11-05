@@ -122,6 +122,7 @@
         </td>
         <td class="text-end">
           <button class="btn btn-sm btn-outline-primary" v-on:click="editar(n)">Editar</button>
+          <a :href="'/Canchas/Index/' + n.idNegocio" class="btn btn-sm btn-outline-secondary">Canchas</a>
           <button v-if="n.activo" class="btn btn-sm btn-outline-danger" v-on:click="baja(n)">Dar de
             baja</button>
             <button v-else class="btn btn-sm btn-outline-success" v-on:click="reactivar(n)">Reactivar</button>

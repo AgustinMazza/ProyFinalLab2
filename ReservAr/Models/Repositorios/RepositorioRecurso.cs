@@ -159,7 +159,43 @@ public class RepositorioRecurso
 
     }
 
+    public int CrearConTarifas(Recurso recurso, List<Tarifa> tarifas)
+    {
+        using var connection = new MySqlConnection(_connectionString);
+        connection.Open();
+        using var transaccion = connection.BeginTransaction();
 
+        var sqlRecurso = "INSERT INTO recursos (IdNegocio, Nombre, Descripcion, DuracionMin, Activo) " +
+                         "VALUES (@idnegocio, @nombre, @descripcion, @duracionMin, @activo); " +
+                         "SELECT LAST_INSERT_ID();";
+        int idRecurso;
+        using (var command = new MySqlCommand(sqlRecurso, connection, transaccion))
+        {
+            command.Parameters.AddWithValue("@idnegocio", recurso.IdNegocio);
+            command.Parameters.AddWithValue("@nombre", recurso.Nombre);
+            command.Parameters.AddWithValue("@descripcion", (object?)recurso.Descripcion ?? DBNull.Value);
+            command.Parameters.AddWithValue("@duracionMin", recurso.DuracionMin);
+            command.Parameters.AddWithValue("@activo", recurso.Activo);
+            idRecurso = Convert.ToInt32(command.ExecuteScalar());
+        }
+
+        var sqlTarifa = "INSERT INTO tarifas (IdRecurso, Nombre, HoraDesde, HoraHasta, PrecioHora, Activo) " +
+                        "VALUES (@idrecurso, @nombre, @horadesde, @horahasta, @preciohora, @activo)";
+        foreach (var tarifa in tarifas)
+        {
+            using var command = new MySqlCommand(sqlTarifa, connection, transaccion);
+            command.Parameters.AddWithValue("@idrecurso", idRecurso);
+            command.Parameters.AddWithValue("@nombre", tarifa.Nombre);
+            command.Parameters.AddWithValue("@horadesde", tarifa.HoraDesde);
+            command.Parameters.AddWithValue("@horahasta", tarifa.HoraHasta);
+            command.Parameters.AddWithValue("@preciohora", tarifa.PrecioHora);
+            command.Parameters.AddWithValue("@activo", tarifa.Activo);
+            command.ExecuteNonQuery();
+        }
+
+        transaccion.Commit();
+        return idRecurso;
+    }
     public int Modificar(Recurso recurso)
     {
         using var connection = new MySqlConnection(_connectionString);
