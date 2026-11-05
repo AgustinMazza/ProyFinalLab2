@@ -12,8 +12,11 @@ namespace ReservAr.Controllers;
 public class NegociosController : Controller
 {
   private const int TamanoPagina = 10;
+  private const int MaxImagenes = 10;
+  private const long MaxBytesImagen = 3 * 1024 * 1024;
 
 
+  private readonly IWebHostEnvironment _env;
   private readonly RepositorioNegocio _repoNegocio;
   private readonly RepositorioCategoria _repoCategoria;
   private readonly RepositorioUsuario _repoUsuario;
@@ -24,12 +27,14 @@ public class NegociosController : Controller
       RepositorioNegocio repoNegocio,
       RepositorioCategoria repoCategoria,
       RepositorioUsuario repoUsuario,
-      RepositorioRol repoRol)
+      RepositorioRol repoRol,
+      IWebHostEnvironment env)
   {
     _repoNegocio = repoNegocio;
     _repoCategoria = repoCategoria;
     _repoUsuario = repoUsuario;
     _repoRol = repoRol;
+    _env = env;
   }
 
   public IActionResult Index()
@@ -61,6 +66,7 @@ public class NegociosController : Controller
       n.Direccion,
       n.Ciudad,
       n.Telefono,
+      n.Imagenes,
       n.Activo
     });
     return Json(new { items, total, pagina, totalPaginas });
@@ -87,6 +93,122 @@ public class NegociosController : Controller
 
     return Json(duenios);
   }
+
+  [HttpGet]
+  public IActionResult ListarImagenes(int id)
+  {
+    var negocio = _repoNegocio.ObtenerPorId(id);
+    if (negocio == null)
+      return NotFound();
+
+    if (!PuedeAdministrar(negocio))
+      return Prohibido();
+
+    return Json(_repoNegocio.ListarImagenes(id));
+  }
+
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public async Task<IActionResult> SubirImagenes(int id, List<IFormFile> archivos)
+  {
+    var negocio = _repoNegocio.ObtenerPorId(id);
+    if (negocio == null)
+      return NotFound();
+
+    if (!PuedeAdministrar(negocio))
+      return Prohibido();
+
+    archivos = archivos?.Where(a => a.Length > 0).ToList() ?? new List<IFormFile>();
+    if (archivos.Count == 0)
+      return Rechazar("Se necesita minimo una imagen");
+
+    var actuales = _repoNegocio.ContarImagenes(id);
+    if (actuales + archivos.Count > MaxImagenes)
+      return Rechazar($"Cada negocio puede tener hasta {MaxImagenes} imagenes (ya tiene {actuales})");
+
+    var permitidas = new[] { ".jpg", ".jpeg", ".png", ".webp" };
+
+    foreach (var archivo in archivos)
+    {
+      if (archivo.Length > MaxBytesImagen)
+        return Rechazar($"\"{archivo.FileName}\" pesa mas de 3 MB");
+
+      var ext = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+      if (!permitidas.Contains(ext))
+        return Rechazar($"\"{archivo.FileName}\" no es JPG, JPEG, PNG o WEBP");
+
+    }
+    var carpeta = Path.Combine(_env.WebRootPath, "uploads", "negocios");
+    Directory.CreateDirectory(carpeta);
+
+
+    foreach (var archivo in archivos)
+    {
+      var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+      var nombreArchivo = $"{Guid.NewGuid()}{extension}";
+
+      using (var stream = new FileStream(Path.Combine(carpeta, nombreArchivo), FileMode.Create))
+      {
+        await archivo.CopyToAsync(stream);
+
+      }
+
+      _repoNegocio.AgregarImagen(id, $"/uploads/negocios/{nombreArchivo}");
+
+    }
+    return Ok(new { ok = true, imagenes = _repoNegocio.ListarImagenes(id) });
+
+  }
+
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public IActionResult EliminarImagen(int id, int idImagen)
+  {
+    var negocio = _repoNegocio.ObtenerPorId(id);
+    if (negocio == null)
+      return NotFound();
+
+    if (!PuedeAdministrar(negocio))
+      return Prohibido();
+
+    var imagen = _repoNegocio.ObtenerImagen(idImagen);
+    if (imagen == null || imagen.IdNegocio != id)
+      return NotFound();
+
+
+
+    _repoNegocio.EliminarImagen(idImagen);
+    BorrarArchivoImagen(imagen.Ruta);
+
+    return Ok(new { ok = true, imagenes = _repoNegocio.ListarImagenes(id) });
+
+
+  }
+
+  [HttpPost]
+  [ValidateAntiForgeryToken]
+  public IActionResult HacerpORTADA(int id, int idImagen)
+  {
+    var negocio = _repoNegocio.ObtenerPorId(id);
+    if (negocio == null)
+      return NotFound();
+
+    if (!PuedeAdministrar(negocio))
+      return Prohibido();
+
+    var imagen = _repoNegocio.ObtenerImagen(idImagen);
+    if (imagen == null || imagen.IdNegocio != id)
+      return NotFound();
+
+    _repoNegocio.MarcarPortada(id, idImagen);
+    return Ok(new { ok = true, imagenes = _repoNegocio.ListarImagenes(id) });
+
+
+
+  }
+
+
+
 
   [HttpPost]
   [ValidateAntiForgeryToken]
@@ -218,6 +340,15 @@ public class NegociosController : Controller
     }
 
     return duenio.IdUsuario;
+  }
+  private void BorrarArchivoImagen(string? ruta)
+  {
+    if (string.IsNullOrEmpty(ruta) || !ruta.StartsWith("/uploads/negocios/"))
+      return;
+
+    var rutaFisica = Path.Combine(_env.WebRootPath, ruta.TrimStart('/'));
+    if (System.IO.File.Exists(rutaFisica))
+      System.IO.File.Delete(rutaFisica);
   }
 
   private bool PuedeAdministrar(Negocio negocio)

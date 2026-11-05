@@ -14,15 +14,24 @@ createApp({
       error: "",
       temporizador: null,
       pedido: 0,
+      tick: 0,
     };
   },
 
   mounted() {
     this.cargarCategorias();
     this.cargarNegocios();
+    setInterval(() => this.tick++, 3500)
   },
 
   methods: {
+    imagenActual(n) {
+      if (n.imagenes && n.imagenes.length > 0)
+        return n.imagenes[this.tick % n.imagenes.length];
+      return n.logoUrl;
+    },
+
+
     async cargarCategorias() {
       const respuesta = await fetch("/Catalogo/ListarCategorias");
       this.categorias = await respuesta.json();

@@ -65,7 +65,7 @@
             <label class="form-label">Teléfono</label>
             <input type="text" class="form-control" maxlength="30" v-model="form.telefono" />
           </div>
-          <div class="col-md-6" v-if="esSuperAdmin">
+                    <div class="col-md-6" v-if="esSuperAdmin">
             <label class="form-label">Dueño</label>
             <div v-if="form.idUsuario > 0 && !cambiandoDuenio" class="input-group">
               <input type="text" class="form-control" :value="duenioNombre" readonly />
@@ -84,6 +84,32 @@
               </div>
             </div>
           </div>
+
+          <div class="col-12" v-if="form.idNegocio > 0">
+            <label class="form-label">Imágenes del negocio <small class="text-muted">({{ imagenes.length }}/10)</small></label>
+
+            <div class="row g-2 mb-2">
+              <div class="col-6 col-md-3" v-for="img in imagenes" :key="img.idImagenNegocio">
+                <div class="card h-100">
+                  <img :src="img.ruta" class="card-img-top" style="height: 100px; object-fit: cover" alt="" />
+                  <div class="card-body p-1 d-flex flex-column gap-1">
+                    <span v-if="img.esPortada" class="badge bg-primary">Portada</span>
+                    <button v-else type="button" class="btn btn-sm btn-outline-primary py-0"
+                            v-on:click="hacerPortada(img)">Hacer portada</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0"
+                            v-on:click="eliminarImagen(img)">Eliminar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group" v-if="imagenes.length < 10">
+              <input type="file" ref="archivosImagenes" class="form-control" multiple
+                     accept=".jpg,.jpeg,.png,.webp" />
+              <button type="button" class="btn btn-outline-primary" v-on:click="subirImagenes">Subir</button>
+            </div>
+            <div class="form-text">JPG, PNG o WEBP, hasta 3 MB cada una. Podés elegir varias a la vez.</div>
+          </div>
           <div class="col-12">
             <label class="form-label">Descripción</label>
             <textarea class="form-control" rows="3" maxlength="500" v-model="form.descripcion"></textarea>
@@ -101,6 +127,7 @@
   <table class="table">
     <thead>
       <tr>
+        <th></th>
         <th>Nombre</th>
         <th>Categoria</th>
         <th>Dirección</th>
@@ -111,6 +138,10 @@
     </thead>
     <tbody>
       <tr v-for="n in negocios" :key="n.idNegocio" :class="{ 'table-secondary': !n.activo }">
+        <td>
+      <img v-if="n.imagenes && n.imagenes.length" :src="n.imagenes[0]"
+          style="width:60px; height:40px; object-fit:cover" class="rounded" />
+          </td>
         <td>{{ n.nombre }}</td>
         <td>{{ n.categoria }}</td>
         <td>{{ n.direccion }}, {{ n.ciudad }}</td>
@@ -129,7 +160,7 @@
           </td>
         </tr>
         <tr v-if="negocios.length === 0">
-          <td :colspan="esSuperAdmin ? 6 : 5" class="text-center text-muted">No hay negocios para mostrar</td>
+          <td :colspan="esSuperAdmin ? 7 : 6" class="text-center text-muted">No hay negocios para mostrar</td>
         </tr>
       </tbody>
     </table>

@@ -1,4 +1,3 @@
-
 @model ReservAr.ViewModels.NegocioReservarViewModel
 
 @{
@@ -9,11 +8,36 @@
 
     <!-- Información del negocio -->
     <div class="card shadow-sm mb-4">
-        @if (!string.IsNullOrEmpty(Model.Negocio.LogoUrl))
+        @{
+            var imagenes = ViewBag.Imagenes as List<ReservAr.Models.ImagenNegocio> ?? new
+                List<ReservAr.Models.ImagenNegocio>();
+        }
+        @if (imagenes.Count > 0)
         {
-            <img src="@Model.Negocio.LogoUrl"
-                 class="card-img-top"
-                 alt="@Model.Negocio.Nombre"
+            <div id="carruselNegocio" class="carousel slide" data-bs-ride="carousel" data-bs-interval="4000">
+                <div class="carousel-inner">
+                    @for (var i = 0; i < imagenes.Count; i++)
+                    {
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <img src="@imagenes[i].Ruta" class="d-block w-100" alt="@Model.Negocio.Nombre"
+                                 style="height: 260px; object-fit: cover;" />
+                        </div>
+                    }
+                </div>
+                @if (imagenes.Count > 1)
+                {
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carruselNegocio" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carruselNegocio" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                }
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(Model.Negocio.LogoUrl))
+        {
+            <img src="@Model.Negocio.LogoUrl" class="card-img-top" alt="@Model.Negocio.Nombre"
                  style="height: 260px; object-fit: cover;" />
         }
 
@@ -79,9 +103,7 @@
                             </p>
 
                             <div class="mt-auto">
-                                <a asp-controller="Reservas"
-                                   asp-action="Detalles"
-                                   asp-route-id="@recurso.IdRecurso"
+                                <a asp-controller="Reservas" asp-action="Detalles" asp-route-id="@recurso.IdRecurso"
                                    class="btn btn-primary w-100">
 
                                     Seleccionar cancha
@@ -99,9 +121,7 @@
     }
 
     <div class="mt-4">
-        <a asp-controller="Home"
-           asp-action="Index"
-           class="btn btn-outline-secondary">
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
 
             Volver al catálogo
 

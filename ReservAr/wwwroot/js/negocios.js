@@ -25,6 +25,7 @@ createApp({
         document.getElementById("app").dataset.esSuperadmin === "true",
       negocios: [],
       categorias: [],
+      imagenes: [],
       duenioBuscar: "",
       duenioResultados: [],
       temporizadorDuenio: null,
@@ -107,6 +108,7 @@ createApp({
       this.duenioBuscar = "";
       this.duenioResultados = [];
       this.mostrarForm = true;
+      this.imagenes = [];
     },
 
     editar(n) {
@@ -125,8 +127,66 @@ createApp({
       this.cambiandoDuenio = false;
       this.duenioBuscar = "";
       this.duenioResultados = [];
+      this.imagenes = [];
+      this.cargarImagenes(n.idNegocio);
       this.mostrarForm = true;
     },
+
+    async cargarImagenes(idNegocio) {
+      const respuesta = await fetch(`/Negocios/ListarImagenes/${idNegocio}`);
+      if (respuesta.ok) this.imagenes = await respuesta.json();
+    },
+
+    async subirImagenes() {
+  const archivos = this.$refs.archivosImagenes.files;
+  if (archivos.length === 0) {
+    this.errores = ["Elegí al menos una imagen."];
+    return;
+  }
+
+  const datos = new FormData();
+  for (const archivo of archivos) datos.append("archivos", archivo);
+
+  const respuesta = await fetch(`/Negocios/SubirImagenes/${this.form.idNegocio}`, {
+    method: "POST",
+    headers: { RequestVerificationToken: tokenAntiforgery() },
+    body: datos,
+  });
+
+  if (respuesta.ok) {
+    this.errores = [];
+    this.$refs.archivosImagenes.value = "";
+    await this.cargarImagenes(this.form.idNegocio);
+    await this.cargarNegocios();
+    return;
+  }
+  this.errores = await this.leerErrores(respuesta);
+},
+
+async eliminarImagen(img) {
+  if (!confirm("¿Eliminar esta imagen?")) return;
+  const respuesta = await this.post(
+    `/Negocios/EliminarImagen/${this.form.idNegocio}?idImagen=${img.idImagenNegocio}`
+  );
+  if (respuesta.ok) {
+    await this.cargarImagenes(this.form.idNegocio);
+    await this.cargarNegocios();
+  } else {
+    this.errores = await this.leerErrores(respuesta);
+  }
+},
+
+async hacerPortada(img) {
+  const respuesta = await this.post(
+    `/Negocios/HacerPortada/${this.form.idNegocio}?idImagen=${img.idImagenNegocio}`
+  );
+  if (respuesta.ok) {
+    await this.cargarImagenes(this.form.idNegocio);
+    await this.cargarNegocios();
+  } else {
+    this.errores = await this.leerErrores(respuesta);
+  }
+},
 
     cancelar() {
       this.mostrarForm = false;

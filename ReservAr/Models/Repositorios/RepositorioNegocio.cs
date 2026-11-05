@@ -1,3 +1,4 @@
+using System.Security.Cryptography.X509Certificates;
 using MySqlConnector;
 using ReservAr.Models;
 
@@ -64,6 +65,8 @@ public class RepositorioNegocio
 
     using var connection = new MySqlConnection(_connectionString);
     var sql = @"SELECT n.IdNegocio, n.Nombre, n.Descripcion, n.Direccion, n.Ciudad, n.Telefono, n.LogoUrl,
+                  (SELECT GROUP_CONCAT(i.Ruta ORDER BY i.EsPortada DESC, i.Orden, i.IdImagenNegocio SEPARATOR '|')
+                   FROM imagenes_negocio i WHERE i.IdNegocio = n.IdNegocio) AS Imagenes,
                       c.Nombre AS CategoriaNombre, c.Icono AS CategoriaIcono,
                       (SELECT COUNT(*) FROM recursos r
                 WHERE r.IdNegocio = n.IdNegocio AND r.Activo = 1) AS CantidadRecursos
@@ -94,6 +97,7 @@ public class RepositorioNegocio
         Ciudad = reader.IsDBNull(reader.GetOrdinal("Ciudad")) ? null : reader.GetString("Ciudad"),
         Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
         LogoUrl = reader.IsDBNull(reader.GetOrdinal("LogoUrl")) ? null : reader.GetString("LogoUrl"),
+        Imagenes = reader.IsDBNull(reader.GetOrdinal("Imagenes"))? new List<string>(): reader.GetString("Imagenes").Split('|').ToList(),
         CategoriaNombre = reader.GetString("CategoriaNombre"),
         CategoriaIcono = reader.IsDBNull(reader.GetOrdinal("CategoriaIcono")) ? null : reader.GetString("CategoriaIcono"),
         CantidadRecursos = Convert.ToInt32(reader["CantidadRecursos"]),
@@ -392,6 +396,8 @@ public class RepositorioNegocio
 
     var sql = "SELECT n.IdNegocio, n.IdCategoria, n.IdUsuario, n.Nombre, n.Descripcion, n.Direccion, " +
     "n.Ciudad, n.Telefono, n.LogoUrl, n.Activo, " +
+    "(SELECT GROUP_CONCAT(i.Ruta ORDER BY i.EsPortada DESC, i.Orden, i.IdImagenNegocio SEPARATOR '|') " +
+    "FROM imagenes_negocio i WHERE i.IdNegocio = n.IdNegocio) AS Imagenes, " +
     "c.Nombre AS CategoriaNombre, " +
     "CONCAT (u.Apellido, ', ', u.Nombre) AS DuenioNombre " +
     "FROM negocios n " +
@@ -429,6 +435,7 @@ public class RepositorioNegocio
         Telefono = reader.IsDBNull(reader.GetOrdinal("Telefono")) ? null : reader.GetString("Telefono"),
         LogoUrl = reader.IsDBNull(reader.GetOrdinal("LogoUrl")) ? null : reader.GetString("LogoUrl"),
         Activo = reader.GetBoolean("Activo"),
+        Imagenes = reader.IsDBNull(reader.GetOrdinal("Imagenes")) ? new List<string>() : reader.GetString("Imagenes").Split('|').ToList(),
         CategoriaNombre = reader.GetString("CategoriaNombre"),
         DuenioNombre = reader.GetString("DuenioNombre"),
 
@@ -436,6 +443,146 @@ public class RepositorioNegocio
     }
 
     return lista;
+
+
+  }
+
+  public List<ImagenNegocio> ListarImagenes(int idNegocio)
+  {
+    var lista = new List<ImagenNegocio>();
+
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "SELECT IdImagenNegocio, IdNegocio, Ruta, Orden, EsPortada FROM imagenes_negocio " +
+              "WHERE IdNegocio = @id ORDER BY EsPortada DESC, Orden, IdImagenNegocio";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@id", idNegocio);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+    while (reader.Read())
+    {
+      lista.Add(new ImagenNegocio
+      {
+        IdImagenNegocio = reader.GetInt32("IdImagenNegocio"),
+        IdNegocio = reader.GetInt32("IdNegocio"),
+        Ruta = reader.GetString("Ruta"),
+        Orden = reader.GetInt32("Orden"),
+        EsPortada = reader.GetBoolean("EsPortada"),
+      });
+    }
+    return lista;
+  }
+
+  public ImagenNegocio? ObtenerImagen(int idImagen)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "SELECT IdImagenNegocio, IdNegocio, Ruta, Orden, EsPortada FROM imagenes_negocio WHERE IdImagenNegocio = @id";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@id", idImagen);
+
+    connection.Open();
+    using var reader = command.ExecuteReader();
+    if (reader.Read())
+    {
+      return new ImagenNegocio
+      {
+        IdImagenNegocio = reader.GetInt32("IdImagenNegocio"),
+        IdNegocio = reader.GetInt32("IdNegocio"),
+        Ruta = reader.GetString("Ruta"),
+        Orden = reader.GetInt32("Orden"),
+        EsPortada = reader.GetBoolean("EsPortada"),
+      };
+    }
+    return null;
+  }
+
+  public int ContarImagenes(int idNegocio)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "SELECT COUNT(*) FROM imagenes_negocio WHERE IdNegocio = @id";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@id", idNegocio);
+
+    connection.Open();
+    return Convert.ToInt32(command.ExecuteScalar());
+
+
+
+
+
+  }
+
+
+  public void AgregarImagen(int idNegocio, string ruta)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "INSERT INTO imagenes_negocio (IdNegocio, Ruta, Orden, EsPortada) " +
+    "SELECT @id, @ruta, COALESCE(MAX(Orden), 0) + 1, COUNT(*) = 0 " +
+    "FROM imagenes_negocio WHERE IdNegocio = @id";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@id", idNegocio);
+    command.Parameters.AddWithValue("@ruta", ruta);
+    connection.Open();
+    command.ExecuteNonQuery();
+
+  }
+
+  public void EliminarImagen(int idImagen)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    connection.Open();
+    using var tx = connection.BeginTransaction();
+
+    int idNegocio;
+    bool eraPortada;
+    using (var leer = new MySqlCommand(
+      "SELECT IdNegocio, EsPortada FROM imagenes_negocio WHERE IdImagenNegocio = @id", connection, tx))
+    {
+      leer.Parameters.AddWithValue("@id", idImagen);
+      using var reader = leer.ExecuteReader();
+      if (!reader.Read()) return;
+      idNegocio = reader.GetInt32("IdNegocio");
+      eraPortada = reader.GetBoolean("EsPortada");
+
+    }
+
+    using (var borrar = new MySqlCommand("DELETE FROM imagenes_negocio WHERE IdImagenNegocio = @id", connection, tx))
+    {
+      borrar.Parameters.AddWithValue("@id", idImagen);
+      borrar.ExecuteNonQuery();
+    }
+
+
+    if (eraPortada)
+    {
+      using var promover = new MySqlCommand("UPDATE imagenes_negocio SET EsPortada = 1 WHERE IdNegocio = @idNegocio " +
+      "ORDER BY Orden, IdImagenNegocio LIMIT 1", connection, tx);
+      promover.Parameters.AddWithValue("@idNegocio", idNegocio);
+      promover.ExecuteNonQuery();
+
+    }
+
+    tx.Commit();
+
+
+
+
+
+
+
+
+  }
+  public void MarcarPortada(int idNegocio, int idImagen)
+  {
+    using var connection = new MySqlConnection(_connectionString);
+    var sql = "UPDATE imagenes_negocio SET EsPortada = (IdImagenNegocio = @idImagen) WHERE IdNegocio = @idNegocio";
+    using var command = new MySqlCommand(sql, connection);
+    command.Parameters.AddWithValue("@idNegocio", idNegocio);
+    command.Parameters.AddWithValue("@idImagen", idImagen);
+
+    connection.Open();
+    command.ExecuteNonQuery();
+
 
 
   }
