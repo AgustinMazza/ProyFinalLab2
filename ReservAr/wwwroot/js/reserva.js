@@ -133,8 +133,7 @@ createApp({
 
         const resultado = JSON.parse(contenido);
 
-        this.mensaje =
-          resultado.mensaje + " Numero de reserva: " + resultado.idReserva;
+        this.mensaje = resultado.mensaje;
 
         this.turnoSeleccionado = null;
 
